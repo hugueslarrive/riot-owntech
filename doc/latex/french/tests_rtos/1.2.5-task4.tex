@@ -1,0 +1,335 @@
+Utiliser \texttt{xtimer} pour créer un thread qui affiche le temps
+système courant toutes les 2 secondes.\\
+
+Le thread\_handler :
+\begin{lstlisting}
+void *thread_handler(void *arg)
+{
+    /* Thread that print the current system time every 2 seconds... */
+    (void)arg;
+    
+    while(true){
+		printf("Current system time is %ld microseconds\n",xtimer_now_usec());
+		xtimer_sleep(2);
+	}
+    
+    return NULL;
+}
+\end{lstlisting}
+
+Le résultat :
+{\scriptsize
+\begin{verbatim}
+2020-05-07 16:22:47,041 # Current system time is 5090 microseconds
+> 2020-05-07 16:22:49,044 #  Current system time is 2008736 microseconds
+2020-05-07 16:22:51,048 # Current system time is 4012642 microseconds
+2020-05-07 16:22:53,051 # Current system time is 6016549 microseconds
+2020-05-07 16:22:55,055 # Current system time is 8020456 microseconds
+2020-05-07 16:22:57,059 # Current system time is 10024362 microseconds
+ps
+2020-05-07 16:22:57,812 # ps
+2020-05-07 16:22:57,819 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-07 16:22:57,827 # 	  - | isr_stack            | -        - |   - |    512 (  156) | 0x20000000 | 0x200001c8
+2020-05-07 16:22:57,835 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003f8 | 0x20000474 
+2020-05-07 16:22:57,844 # 	  2 | main                 | running  Q |   7 |   1536 (  676) | 0x200004f8 | 0x2000094c 
+2020-05-07 16:22:57,852 # 	  3 | thread               | bl mutex _ |   6 |   1536 (  356) | 0x20000afc | 0x2000102c 
+2020-05-07 16:22:57,858 # 	    | SUM                  |            |     |   3840 ( 1320)
+> 2020-05-07 16:22:59,063 #  Current system time is 12028356 microseconds
+2020-05-07 16:23:01,066 # Current system time is 14032358 microseconds
+2020-05-07 16:23:03,071 # Current system time is 16036360 microseconds
+2020-05-07 16:23:05,074 # Current system time is 18040362 microseconds
+\end{verbatim}
+}
+
+Il y a un écart d'environ 4ms. J'ai modifié le programme pour mesurer
+la durée de la boucle :
+{\scriptsize
+\begin{verbatim}
+2020-05-07 16:51:05,767 # Loop duration 7673 microseconds
+2020-05-07 16:51:07,771 # Loop duration 2002858 microseconds
+2020-05-07 16:51:09,774 # Loop duration 2003119 microseconds
+2020-05-07 16:51:11,777 # Loop duration 2003118 microseconds
+2020-05-07 16:51:13,780 # Loop duration 2003118 microseconds
+2020-05-07 16:51:15,783 # Loop duration 2003118 microseconds
+2020-05-07 16:51:17,786 # Loop duration 2003118 microseconds
+2020-05-07 16:51:19,789 # Loop duration 2003118 microseconds
+2020-05-07 16:51:21,792 # Loop duration 2003118 microseconds
+2020-05-07 16:51:23,795 # Loop duration 2003118 microseconds
+2020-05-07 16:51:25,798 # Loop duration 2003118 microseconds
+2020-05-07 16:51:27,800 # Loop duration 2003118 microseconds
+\end{verbatim}
+}
+
+On peut voir qu'il a l'air de se stabiliser après 3 itérations.
+Maintenant un essai de compensation avec
+\texttt{xtimer\_usleep(1996882);} (2000000-3118=1996882):
+{\scriptsize
+\begin{verbatim}
+2020-05-07 17:00:23,165 # Loop duration 7673 microseconds
+2020-05-07 17:00:25,166 # Loop duration 1999738 microseconds
+2020-05-07 17:00:27,165 # Loop duration 2000007 microseconds
+2020-05-07 17:00:29,165 # Loop duration 2000007 microseconds
+2020-05-07 17:00:31,165 # Loop duration 2000006 microseconds
+2020-05-07 17:00:33,165 # Loop duration 2000007 microseconds
+2020-05-07 17:00:35,165 # Loop duration 2000007 microseconds
+2020-05-07 17:00:37,165 # Loop duration 2000006 microseconds
+2020-05-07 17:00:39,164 # Loop duration 2000007 microseconds
+2020-05-07 17:00:41,164 # Loop duration 2000007 microseconds
+\end{verbatim}
+}
+
+On y arrive pas de cette manière : avec un sleep time de 1996875
+à 1996881 on obtient 1999998, et ça passe à 2000007 à partir de
+1996882.\\
+
+Le printf imprime sur la console à 115200 bauds ce qui prend environ
+87 $\mu$s par caractère.\\
+
+\begin{comment}
+Bof... en enlevant encore 7 ?
+{\scriptsize
+\begin{verbatim}
+2020-05-07 17:06:51,271 # Loop duration 7673 microseconds
+2020-05-07 17:06:53,272 # Loop duration 1999730 microseconds
+2020-05-07 17:06:55,272 # Loop duration 1999998 microseconds
+2020-05-07 17:06:57,272 # Loop duration 1999998 microseconds
+2020-05-07 17:06:59,272 # Loop duration 1999998 microseconds
+2020-05-07 17:07:01,272 # Loop duration 1999998 microseconds
+2020-05-07 17:07:03,271 # Loop duration 1999998 microseconds
+2020-05-07 17:07:05,271 # Loop duration 1999998 microseconds
+\end{verbatim}
+}
+
+Toujours pas... +2 ?
+{\scriptsize
+\begin{verbatim}
+2020-05-07 17:09:14,078 # Loop duration 1999738 microseconds
+2020-05-07 17:09:16,077 # Loop duration 1999998 microseconds
+2020-05-07 17:09:18,077 # Loop duration 1999998 microseconds
+2020-05-07 17:09:20,077 # Loop duration 1999998 microseconds
+2020-05-07 17:09:22,077 # Loop duration 1999998 microseconds
+2020-05-07 17:09:24,077 # Loop duration 1999998 microseconds
+\end{verbatim}
+}
+
+Avec des valeurs de sleep de 1996875 à 1996881 on obtient 1999998, et ça
+passe à 2000007 à partir de 1996882, on y arrivera pas.
+
+L'essentiel de la durée d'exécution de la boucle est lié au 
+\texttt{printf}. On peut donc obtenir quelque chose de
+beaucoup plus précis le mettant dans un autre thread :
+{\scriptsize
+\begin{verbatim}
+2020-05-07 17:35:48,433 # Loop duration 2000024 microseconds
+2020-05-07 17:35:50,436 # Loop duration 2000025 microseconds
+2020-05-07 17:35:52,439 # Loop duration 2000025 microseconds
+2020-05-07 17:35:54,442 # Loop duration 2000025 microseconds
+ps
+2020-05-07 17:35:56,135 # ps
+2020-05-07 17:35:56,141 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-07 17:35:56,149 # 	  - | isr_stack            | -        - |   - |    512 (  156) | 0x20000000 | 0x200001c8
+2020-05-07 17:35:56,157 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003f8 | 0x20000474 
+2020-05-07 17:35:56,166 # 	  2 | main                 | running  Q |   7 |   1536 (  688) | 0x200004f8 | 0x2000094c 
+2020-05-07 17:35:56,175 # 	  3 | thread               | bl mutex _ |   5 |   1536 (  208) | 0x20000b04 | 0x20001034 
+2020-05-07 17:35:56,183 # 	  4 | thread2              | bl mutex _ |   6 |   1536 (  356) | 0x20001104 | 0x20001634 
+2020-05-07 17:35:56,189 # 	    | SUM                  |            |     |   5376 ( 1540)
+> 2020-05-07 17:35:56,444 #  Loop duration 2000025 microseconds
+2020-05-07 17:35:58,447 # Loop duration 2000025 microseconds
+2020-05-07 17:36:00,450 # Loop duration 2000025 microseconds
+2020-05-07 17:36:02,453 # Loop duration 2000025 microseconds
+\end{verbatim}
+}
+
+C'est mieux ! Voyons si on peut compenser ces 25$\mu$ :
+{\scriptsize
+\begin{verbatim}
+2020-05-07 17:46:00,323 # Loop duration 1999999 microseconds
+2020-05-07 17:46:02,327 # Loop duration 2000000 microseconds
+2020-05-07 17:46:04,329 # Loop duration 2000000 microseconds
+2020-05-07 17:46:06,332 # Loop duration 2000000 microseconds
+2020-05-07 17:46:08,335 # Loop duration 2000000 microseconds
+2020-05-07 17:46:10,338 # Loop duration 2000000 microseconds
+2020-05-07 17:46:12,341 # Loop duration 2000000 microseconds
+2020-05-07 17:46:14,344 # Loop duration 2000000 microseconds
+2020-05-07 17:46:16,347 # Loop duration 2000000 microseconds
+2020-05-07 17:46:18,350 # Loop duration 2000000 microseconds
+2020-05-07 17:46:20,353 # Loop duration 2000001 microseconds
+2020-05-07 17:46:22,356 # Loop duration 2000000 microseconds
+2020-05-07 17:46:24,358 # Loop duration 2000000 microseconds
+2020-05-07 17:46:26,361 # Loop duration 2000000 microseconds
+\end{verbatim}
+}
+
+On arrive quand même à quelque chose de relativement précis et stable.
+Là j'étais sur la bleupill, évidament ce n'est pas portable, sur la
+nucleo ça donne :
+{\scriptsize
+\begin{verbatim}
+2020-05-07 17:59:44,341 # Loop duration 1999993 microseconds
+2020-05-07 17:59:46,344 # Loop duration 1999994 microseconds
+2020-05-07 17:59:48,347 # Loop duration 1999993 microseconds
+2020-05-07 17:59:50,350 # Loop duration 1999993 microseconds
+2020-05-07 17:59:52,353 # Loop duration 1999993 microseconds
+2020-05-07 17:59:54,355 # Loop duration 1999993 microseconds
+2020-05-07 17:59:56,359 # Loop duration 1999993 microseconds
+2020-05-07 17:59:58,362 # Loop duration 1999993 microseconds
+\end{verbatim}
+}
+\end{comment}
+
+J'ai donc sorti le printf dans un autre thread en utilisant le système
+de message IPC de RIOT (voir
+\url{https://github.com/RIOT-OS/RIOT/tree/master/examples/ipc_pingpong}.
+\\
+
+Le main.c :
+\begin{lstlisting}
+#include <stdio.h>
+#include <string.h>
+
+#include "shell.h"
+#include "thread.h"
+#include "xtimer.h"
+#include "msg.h"
+
+#define PERIOD_US 2000000
+
+char stack_timer2s[THREAD_STACKSIZE_MAIN];
+char stack_printf2s[THREAD_STACKSIZE_MAIN];
+
+void *printf2s_handler(void *arg)
+{
+    /* Thread that print the current system time every 2 seconds... */
+    (void)arg;
+    msg_t t;
+    uint32_t time; // the current system time received from timer2s
+    uint32_t duration; // the real loop duration from previous time
+    uint32_t prev_time = 0; // to save the previous time
+    uint32_t gap = 0; // the gap between sleep_time and PERIOD_US
+    uint32_t sleep_time = PERIOD_US;
+    uint32_t before_printf_time = 0;
+    uint32_t after_printf_time = 0;
+    uint32_t prev_before_printf_time = 0;
+
+    while (1) {
+        msg_receive(&t);
+        time = t.content.value;
+        duration = time - prev_time;
+        gap = prev_time ? duration - PERIOD_US : 0;// not the first time
+        if (gap) {
+            sleep_time -= gap;
+        }
+        t.content.value = sleep_time;
+        msg_reply(&t, &t);
+        before_printf_time = xtimer_now_usec();
+        printf("system time: %lu £\color{orange}$\mu$£s, last period: %lu £\color{orange}$\mu$£s, next sleep\
+ time: %lu £\color{orange}$\mu$£s, time gap: %lu £\color{orange}$\mu$£s, last printf: %lu £\color{orange}$\mu$£s\n",
+            time, duration, sleep_time, PERIOD_US - sleep_time,
+            after_printf_time - prev_before_printf_time);
+        after_printf_time = xtimer_now_usec();
+        prev_before_printf_time = before_printf_time;
+        prev_time = time;
+    }
+    
+    return NULL;
+}
+
+void *timer2s_handler(void *arg)
+{
+    /* Thread that save the current system time every 2 seconds... */
+    (void)arg;
+
+    msg_t t;
+    
+    kernel_pid_t pid = thread_create(stack_printf2s,
+                            sizeof(stack_printf2s),
+                            THREAD_PRIORITY_MAIN - 1,
+                            THREAD_CREATE_STACKTEST,
+                            printf2s_handler, NULL,
+                            "printf2s");
+    
+    while (1) {
+        t.content.value = xtimer_now_usec();
+        msg_send_receive(&t, &t, pid);
+        xtimer_usleep(t.content.value);
+    }
+
+    return NULL;
+}
+
+int main(void)
+{
+    puts("This is Task-04");
+
+    thread_create(stack_timer2s, sizeof(stack_timer2s),
+                  THREAD_PRIORITY_MAIN - 2,
+                  THREAD_CREATE_STACKTEST,
+                  timer2s_handler, NULL,
+                  "timer2s");
+ 
+    char line_buf[SHELL_DEFAULT_BUFSIZE];
+    shell_run(NULL, line_buf, SHELL_DEFAULT_BUFSIZE);
+
+    return 0;
+}
+\end{lstlisting}
+
+La durée du sleep est ajustée automatique lors des premières itérations
+ce qui rend le code portable.\\
+
+Le résultat sur la bluepill :
+{\tiny
+\begin{alltt}
+2020-05-13 10:36:46,578 # main(): This is RIOT! (Version: 2020.04)
+2020-05-13 10:36:46,581 # This is Task-04
+2020-05-13 10:36:46,590 # system time: 5123 \(\mu\)s, last period: 5123 \(\mu\)s, next sleep time: 2000000 \(\mu\)s, time gap: 0 \(\mu\)s, last printf: 0 \(\mu\)s
+> 2020-05-13 10:36:48,592 #  system time: 2005164 \(\mu\)s, last period: 2000041 \(\mu\)s, next sleep time: 1999959 \(\mu\)s, time gap: 41 \(\mu\)s, last printf: 9911 \(\mu\)s
+2020-05-13 10:36:50,592 # system time: 4005160 \(\mu\)s, last period: 1999996 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10791 \(\mu\)s
+ps
+2020-05-13 10:36:51,307 # ps
+2020-05-13 10:36:51,313 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-13 10:36:51,322 # 	  - | isr_stack            | -        - |   - |    512 (  156) | 0x20000000 | 0x200001c8
+2020-05-13 10:36:51,330 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003f8 | 0x20000474 
+2020-05-13 10:36:51,339 # 	  2 | main                 | running  Q |   7 |   1536 (  676) | 0x200004f8 | 0x2000094c 
+2020-05-13 10:36:51,347 # 	  3 | timer2s              | bl mutex _ |   5 |   1536 (  232) | 0x200010fc | 0x20001614 
+2020-05-13 10:36:51,356 # 	  4 | printf2s             | bl rx    _ |   6 |   1536 (  404) | 0x20000afc | 0x20001034 
+2020-05-13 10:36:51,361 # 	    | SUM                  |            |     |   5376 ( 1600)
+> 2020-05-13 10:36:52,591 #  system time: 6005160 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10871 \(\mu\)s
+2020-05-13 10:36:54,591 # system time: 8005160 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10877 \(\mu\)s
+2020-05-13 10:36:56,591 # system time: 10005160 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10875 \(\mu\)s
+2020-05-13 10:36:58,591 # system time: 12005160 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10960 \(\mu\)s
+2020-05-13 10:37:00,591 # system time: 14005160 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10958 \(\mu\)s
+2020-05-13 10:37:02,590 # system time: 16005160 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999963 \(\mu\)s, time gap: 37 \(\mu\)s, last printf: 10965 \(\mu\)s
+\end{alltt}
+}
+
+Sur la nucleo :
+{\tiny
+\begin{alltt}
+2020-05-13 15:32:06,195 # This is Task-04
+2020-05-13 15:32:06,205 # system time: 5035 \(\mu\)s, last period: 5035 \(\mu\)s, next sleep time: 2000000 \(\mu\)s, time gap: 0 \(\mu\)s, last printf: 0 \(\mu\)s
+> 2020-05-13 15:32:08,206 #  system time: 2005065 \(\mu\)s, last period: 2000030 \(\mu\)s, next sleep time: 1999970 \(\mu\)s, time gap: 30 \(\mu\)s, last printf: 9807 \(\mu\)s
+2020-05-13 15:32:10,206 # system time: 4005062 \(\mu\)s, last period: 1999997 \(\mu\)s, next sleep time: 1999973 \(\mu\)s, time gap: 27 \(\mu\)s, last printf: 10679 \(\mu\)s
+2020-05-13 15:32:12,206 # system time: 6005061 \(\mu\)s, last period: 1999999 \(\mu\)s, next sleep time: 1999974 \(\mu\)s, time gap: 26 \(\mu\)s, last printf: 10766 \(\mu\)s
+2020-05-13 15:32:14,206 # system time: 8005061 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999974 \(\mu\)s, time gap: 26 \(\mu\)s, last printf: 10766 \(\mu\)s
+2020-05-13 15:32:16,206 # system time: 10005061 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999974 \(\mu\)s, time gap: 26 \(\mu\)s, last printf: 10766 \(\mu\)s
+2020-05-13 15:32:18,206 # system time: 12005061 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999974 \(\mu\)s, time gap: 26 \(\mu\)s, last printf: 10853 \(\mu\)s
+2020-05-13 15:32:20,207 # system time: 14005061 \(\mu\)s, last period: 2000000 \(\mu\)s, next sleep time: 1999974 \(\mu\)s, time gap: 26 \(\mu\)s, last printf: 10853 \(\mu\)s
+\end{alltt}
+}
+
+J'ai aussi effectué un test avec \enquote{BOARD=native}, évidemment ça
+ne se stabilise jamais.\\
+
+On peut voir qu'il faut 2 ou 3 périodes pour que le "sleep\_time" soit
+ajusté. C'est dû au fait que le thread printf2s n'est pas totalement
+prêt à traiter l'IPC lors de la première itération de la boucle. On peut
+facilement résoudre ce problème en ajoutant un délai de 30$\mu$s entre
+la création du thread et la boucle. Ainsi la période est ajustée dès la
+seconde itération.\\
+
+J'ai aussi rajouté une constante qui permet de prédéfinir l'écart s'il
+est connu pour que la période soit juste dès la première itération. Ça a
+bien fonctionné sur la bluepill, un peu mois sur la nucleo où la
+première fais 1$\mu$s de trop et la seconde 1$\mu$s de moins avec ce
+code.

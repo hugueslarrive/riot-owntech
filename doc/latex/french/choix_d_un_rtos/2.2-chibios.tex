@@ -1,0 +1,94 @@
+\subsubsection{Licence}
+Apache 2.0 pour la HAL et GNU GPLv3 pour le reste.\\
+
+La licence Apache 2.0 est reconnue comme une licence de logiciel libre par le projet
+GNU \cite{ref2}
+
+\subsubsection{Code source}
+Dépot Subversion : \url{https://osdn.net/projects/chibios/scm/svn/tree/head/}.\\
+
+Il semble très fourni et bien organisé, un fichier readme.txt à la racine montre
+cette organisation :
+\begin{verbatim}
+*****************************************************************************
+*** ChibiOS products directory organization                               ***
+*****************************************************************************
+
+--{root}                - Distribution directory.
+  +--os/                - ChibiOS products, this directory.
+  |  +--rt/             - ChibiOS/RT product.
+  |  |  +--include/     - RT kernel headers.
+  |  |  +--src/         - RT kernel sources.
+  |  |  +--templates/   - RT kernel port template files.
+  |  |  +--ports/       - RT kernel port files.
+  |  |  +--osal/        - RT kernel OSAL module for HAL interface.
+  |  +--nil/            - ChibiOS/NIL product.
+  |  |  +--include/     - Nil kernel headers.
+  |  |  +--src/         - Nil kernel sources.
+  |  |  +--templates/   - Nil kernel port template files.
+  |  |  +--ports/       - Nil kernel port files.
+  |  |  +--osal/        - Nil kernel OSAL module for HAL interface.
+  |  +--hal/            - ChibiOS/HAL product.
+  |  |  +--include/     - HAL high level headers.
+  |  |  +--src/         - HAL high level sources.
+  |  |  +--templates/   - HAL port template files.
+  |  |  +--ports/       - HAL port files (low level drivers implementations).
+  |  |  +--boards/      - HAL board files.
+  |  +--common/         - Files used by multiple ChibiOS products.
+  |  |  +--ports        - Common port files for various architectures and
+  |  |                    compilers.
+  |  +--various/        - Various portable support files.
+  |  +--ext/            - Vendor files used by ChibiOS products.
+\end{verbatim}
+
+Les commentaires comportent des tags doxygen.\\
+
+Le code est propre, clair, et homogène mais ne respecte pas les \enquote{GNU Coding
+Standards}\cite{ref4} (moi non-plus mais je voulais m'y mettre).\\
+
+\begin{verbatim}
+ChibiOS follows the K&R style indentation style with few modifications: Only two
+spaces are used for indentation. TAB characters are forbidden. Non UTF-8 characters
+are forbidden. EOL must be CRLF (windows convention). The else statement goes to the
+line after the closing } .
+\end{verbatim}
+
+\subsubsection{Plateformes cible}
+De nombreuses cartes STM32 dont la ST\_NUCLEO144\_746ZG.
+
+\subsubsection{Communauté}
+La communauté semble importante au vu de la quantité de matériel supporté.\\
+
+Le projet est actif (environ 2 ou 3 commits par jours).\\
+
+Le site internet \url{http://www.chibios.org} comporte 6 pages :
+\begin{itemize}
+	\item Home ;
+	\item Products ;
+	\item Downloads ;
+	\item Documentation ;
+	\item Articles ;
+	\item Licensing.\\
+\end{itemize}
+
+La page \enquote{Documentation} offre un livre \enquote{ChibiOS/RT 3.0 - The Ultimate
+Guide}, et des manuels de références complets pour les version 20.3 et 19.1 ainsi que
+ceux de 5 versions obsolètes.\\
+
+La page \enquote{Articles} commence par une section \enquote{Getting started} qui
+contient 13 articles dont 12 incluant STM32 dans le titre.\\
+
+Il y a aussi un wiki technique, un forum de support, un canal IRC freenode.
+
+\subsubsection{Acceptabilité}
+\begin{tabular}{lll}
+\toprule
+	Critère				&	Validé		&	Commentaire	\\
+\midrule
+	Licence				&	oui			&		\\
+	Code source			&	oui			&		\\
+	Plateformes cible	&	oui			&		\\
+	Communauté			&	oui			&		\\
+\bottomrule
+\end{tabular}
+

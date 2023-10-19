@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name owntech-nucleo144)(type KiCad)(uri ${KIPRJMOD}/FP.pretty)(options "")(descr ""))
+)

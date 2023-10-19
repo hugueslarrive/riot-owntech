@@ -1,0 +1,291 @@
+\subsubsection{eth}
+Seulement 2 cartes supportent l'ethernet : la nucleo-f207zg et la
+nucleo-f767zi dont j'ai déjà utilisé le support lors des tutos. Je vais
+donc me baser principalement sur cette dernière.\\
+
+Je vais tout d’abord identifier les fichiers différents :
+{\scriptsize
+\begin{verbatim}
+hugues@Latitude5400:~/Tutorials/RIOT$ diff -qr boards/nucleo-f746zg/ boards/nucleo-f767zi/
+Les fichiers boards/nucleo-f746zg/doc.txt et boards/nucleo-f767zi/doc.txt sont différents
+Les fichiers boards/nucleo-f746zg/include/periph\_conf.h et boards/nucleo-f767zi/include/periph\_conf.h sont différents
+Les fichiers boards/nucleo-f746zg/Makefile.dep et boards/nucleo-f767zi/Makefile.dep sont différents
+Les fichiers boards/nucleo-f746zg/Makefile.features et boards/nucleo-f767zi/Makefile.features sont différents
+\end{verbatim}
+}
+Le fichier Makefile.dep :
+{\scriptsize
+\begin{verbatim}
+hugues@Latitude5400:~/Tutorials/RIOT$ diff -u boards/nucleo-f746zg/Makefile.dep boards/nucleo-f207zg/Makefile.dep 
+--- boards/nucleo-f746zg/Makefile.dep	2020-05-25 18:11:52.511615116 +0200
++++ boards/nucleo-f207zg/Makefile.dep	2020-05-04 17:04:48.249357834 +0200
+@@ -1 +1,5 @@
++ifneq (,$(filter netdev\_default gnrc\_netdev\_default,$(USEMODULE)))
++  USEMODULE += stm32\_eth
++endif
++
+ include $(RIOTBOARD)/common/nucleo/Makefile.dep
+hugues@Latitude5400:~/Tutorials/RIOT$ diff -q boards/nucleo-f767zi/Makefile.dep boards/nucleo-f207zg/Makefile.dep 
+\end{verbatim}
+}
+Là on voit qu'il manque juste 3 lignes, ces fichiers sont identiques
+entre la nucleo-f767zi et la nucleo-f207zg donc il n'y a pas trop de
+question à se poser.\\
+
+Après ça on tente de compiler la \enquote{Task-06} des tutos, on obtient
+le message suivant :
+{\scriptsize
+\begin{verbatim}
+hugues@Latitude5400:~/Tutorials/task-06$ make all
+There are unsatisfied feature requirements: periph\_dma periph\_eth
+/home/hugues/Tutorials/task-06/../RIOT/Makefile.include:841: *** You can let the build continue on expected errors
+by setting CONTINUE\_ON\_EXPECTED\_ERRORS=1 to the command line. Arrêt.
+\end{verbatim}
+}
+Ce qui montre que \texttt{periph\_eth} dépend de \texttt{periph\_dma}.\\
+
+J'ajoute donc ces 2 periphériques au fichier
+\texttt{Makefile.features} :
+\begin{verbatim}
+FEATURES\_PROVIDED += periph\_dma
+FEATURES\_PROVIDED += periph\_eth
+\end{verbatim}
+
+Maintenant la compilation échoue, il faut compléter le fichier
+\texttt{include/periph\_conf.h} :
+\begin{verbatim}
+...
+\end{verbatim}
+
+{\scriptsize
+\begin{verbatim}
+hugues@Latitude5400:~/Tutorials/RIOT$ diff -u boards/nucleo-f746zg/Makefile.dep boards/nucleo-f767zi/Makefile.dep
+--- boards/nucleo-f746zg/Makefile.dep	2020-05-25 18:11:52.511615116 +0200
++++ boards/nucleo-f767zi/Makefile.dep	2020-05-04 17:04:48.253357832 +0200
+@@ -1 +1,5 @@
++ifneq (,$(filter netdev\_default gnrc\_netdev\_default,$(USEMODULE)))
++  USEMODULE += stm32\_eth
++endif
++
+ include $(RIOTBOARD)/common/nucleo/Makefile.dep
+hugues@Latitude5400:~/Tutorials/RIOT$ diff -u boards/nucleo-f746zg/Makefile.dep boards/nucleo-f207zg/Makefile.dep 
+--- boards/nucleo-f746zg/Makefile.dep	2020-05-25 18:11:52.511615116 +0200
++++ boards/nucleo-f207zg/Makefile.dep	2020-05-04 17:04:48.249357834 +0200
+@@ -1 +1,5 @@
++ifneq (,$(filter netdev\_default gnrc\_netdev\_default,$(USEMODULE)))
++  USEMODULE += stm32\_eth
++endif
++
+ include $(RIOTBOARD)/common/nucleo/Makefile.dep
+\end{verbatim}
+}
+...
+
+\subsubsection{pwm}
+Nous aurons besoins d'au moins 10 signaux pwm et leurs compléments donc
+un total de 20.\\
+
+Le stm32 intègre différents timers dont une douzaine exploitables pour
+générer des signaux pwm, chacun de ces timers disposant de plusieurs
+canaux :
+\begin{itemize}
+    \item TIM1/TIM8 : 6 canaux ;
+    \item TIM2/TIM3/TIM4/TIM5 : 4 canaux ;
+    \item TIM9/TIM10/TIM11/TIM12/TIM13/TIM14 : 2 canaux.
+\end{itemize}
+~\\
+
+Ces canaux ne sont pas tous routables vers des broches de sorties, et
+n'ont pas tous de sortie complémentaire : les 2 timers à 6
+canaux n'ont que 4 canaux routables et seulement 3 sorties
+complémentaire, les autres n'ont pas de sorties complémentaire.\\
+
+Le driver pwm existant dans RIOT est buggé et ne gère pas les sorties
+complémentaires. On peut produire des signaux complémentaires en
+utilisant 2 canaux avec quelques modifications mineurs, pour utiliser
+les sorties complémentaires c'est plus compliqué mais ça permettrait 4
+sorties de plus au besoin.\\
+
+Le stm32-f746zg existe en différents boîtiers de 100 à 216 pins et nous
+utilisons la version à 144 pins sur laquelle les sorties des timers ne
+sont peut-être pas toutes câblées et la carte nucleo dispose d'une
+connectique \enquote{ST Zio} à 100 contacts mâle et femelle qu'il serait
+préférable d'utiliser plutôt que la connectique \enquote{ST morpho} à
+144 contacts pour laquelle il faut souder les contacts à la main.\\
+
+Les sorties pwm disponibles sur les connecteurs \enquote{ST Zio} :\\
+{\footnotesize
+\begin{tabular}{rcccccl}
+\toprule
+   & Connector     & Pin & Pin name & Signal name                   & STM32 pin  & Function                  \\
+\midrule
+1  & \MR{3}{CN7}   & 14  & D11      & SPI\_A\_MOSI / TIMER\_E\_PWM1 & PA7 or PB5   & SPI1\_MOSI / TIM14\_CH1 \\
+2  &               & 16  & D10      & SPI\_A\_CS / TIMER\_B\_PWM3   & PD14         & SPI1\_CS / TIM4\_CH3    \\
+3  &               & 18  & D9       & TIMER\_B\_PWM2                & PD15         & TIM4\_CH4               \\
+\midrule
+4  & \MR{10}{CN10} & 29  & D32      & TIMER\_C\_PWM1                & PA0          & TIM2\_CH1               \\
+5  &               & 31  & D33      & TIMER\_D\_PWM1                & PB0          & TIM3\_CH3               \\
+6  &               & 4   & D6       & TIMER\_A\_PWM1                & PE9          & TIM1\_CH1               \\
+7  &               & 6   & D5       & TIMER\_A\_PWM2                & PE11         & TIM1\_CH2               \\
+8  &               & 10  & D3       & TIMER\_A\_PWM3                & PE13         & TIM1\_CH3               \\
+9  &               & 18  & D42      & TIMER\_A\_PWM1N               & PE8          & TIM1\_CH1N              \\
+10 &               & 24  & D40      & TIMER\_A\_PWM2N               & PE10         & TIM1\_CH2N              \\
+11 &               & 26  & D39      & TIMER\_A\_PWM3N               & PE12         & TIM1\_CH3N              \\
+12 &               & 32  & D36      & TIMER\_C\_PWM2                & PB10         & TIM2\_CH3               \\
+13 &               & 34  & D35      & TIMER\_C\_PWM3                & PB11         & TIM2\_CH4               \\
+\bottomrule
+\end{tabular}
+}~\\
+
+Comme on peut le voir, il n'y en a que 13 dont 2 partagées avec un bus
+SPI et 3 complémentaires donc il faudra faire un compromis.\\
+
+Les sorties pwm disponibles sur les connecteurs \enquote{ST morpho} :\\
+\newcommand\tcr[1]{\textcolor{red}{#1}}
+\newcommand\tco[1]{\textcolor{orange}{#1}}
+\newcommand\tcpk[1]{\textcolor{pink}{#1}}
+\newcommand\tcm[1]{\textcolor{magenta}{#1}}
+\newcommand\tcv[1]{\textcolor{violet}{#1}}
+\newcommand\tcg[1]{\textcolor{gray}{#1}}
+\newcommand\tcgr[1]{\textcolor{green}{#1}}
+{\tiny
+\begin{tabular}{rccl}
+\toprule
+   & LQFP144 Pin & Pin name & Functions \\
+\midrule
+1  & 4           & PE5      & TRACED2, TIM9\_CH1, \tcr{SPI4\_MISO}, SAI1\_SCK\_A, FMC\_A21, DCMI\_D6, LCD\_G0 \\
+2  & 5           & PE6      & TRACED3, TIM1\_BKIN2, TIM9\_CH2, \tcr{SPI4\_MOSI}, SAI1\_SD\_A, SAI2\_MCK\_B, FMC\_A22, DCMI\_D7, LCD\_G1 \\
+3  & 18          & PF6      & TIM10\_CH1, SPI5\_NSS, SAI1\_SD\_B, UART7\_Rx, QUADSPI\_BK1\_IO3 \\
+4  & 19          & PF7      & TIM11\_CH1, \tcr{SPI5\_SCK}, SAI1\_MCLK\_B, UART7\_Tx, QUADSPI\_BK1\_IO2 \\
+5  & 20          & PF8      & \tcr{SPI5\_MISO}, SAI1\_SCK\_B, UART7\_RTS, TIM13\_CH1, QUADSPI\_BK1\_IO0 \\
+6  & 21          & PF9      & \tcr{SPI5\_MOSI}, SAI1\_FS\_B, UART7\_CTS, TIM14\_CH1, QUADSPI\_BK1\_IO1 \\
+7  & 34          & PA0      & TIM2\_CH1/TIM2\_ETR, TIM5\_CH1, TIM8\_ETR, USART2\_CTS, UART4\_TX, SAI2\_SD\_B, ETH\_MII\_CRS \\
+8  & 35          & PA1      & TIM2\_CH2, TIM5\_CH2, USART2\_RTS, UART4\_RX, QUADSPI\_BK1\_IO3, SAI2\_MCK\_B, ETH\_MII\_RX\_CLK/\tco{ETH\_RMII\_REF\_CLK}, LCD\_R2 \\
+9  & 36          & PA2      & TIM2\_CH3, TIM5\_CH3, TIM9\_CH1, USART2\_TX, SAI2\_SCK\_B, \tco{ETH\_MDIO}, LCD\_R1 \\
+10 & 37          & PA3      & TIM2\_CH4, TIM5\_CH4, TIM9\_CH2, USART2\_RX, OTG\_HS\_ULPI\_D0, ETH\_MII\_COL, LCD\_B5 \\
+11 & 41          & PA5      & TIM2\_CH1/TIM2\_ETR, TIM8\_CH1N, \tcr{SPI1\_SCK}/I2S1\_CK, OTG\_HS\_ULPI\_CK, LCD\_R4 \\
+12 & 42          & PA6      & TIM1\_BKIN, TIM3\_CH1, TIM8\_BKIN, \tcg{SPI1\_MISO}, TIM13\_CH1, DCMI\_PIXCLK, LCD\_G2 \\
+13 & 43          & PA7      & TIM1\_CH1N, TIM3\_CH2, TIM8\_CH1N, \tcg{SPI1\_MOSI}/I2S1\_SD, TIM14\_CH1, ETH\_MII\_RX\_DV/\tco{ETH\_RMII\_CRS\_DV}, FMC\_SDNWE \\
+14 & 46          & PB0      & TIM1\_CH2N, TIM3\_CH3, TIM8\_CH2N, UART4\_CTS, LCD\_R3, OTG\_HS\_ULPI\_D1, ETH\_MII\_RXD2 \\
+15 & 47          & PB1      & TIM1\_CH3N, TIM3\_CH4, TIM8\_CH3N, LCD\_R6, OTG\_HS\_ULPI\_D2, ETH\_MII\_RXD3 \\
+16 & 59          & PE8      & TIM1\_CH1N, UART7\_Tx, QUADSPI\_BK2\_IO1, FMC\_D5 \\
+17 & 60          & PE9      & TIM1\_CH1, UART7\_RTS, QUADSPI\_BK2\_IO2, FMC\_D6 \\
+18 & 63          & PE10     & TIM1\_CH2N, UART7\_CTS, QUADSPI\_BK2\_IO3, FMC\_D7 \\
+19 & 64          & PE11     & TIM1\_CH2, SPI4\_NSS, SAI2\_SD\_B, FMC\_D8, LCD\_G3 \\
+20 & 65          & PE12     & TIM1\_CH3N, \tcr{SPI4\_SCK}, SAI2\_SCK\_B, FMC\_D9, LCD\_B4 \\
+21 & 66          & PE13     & TIM1\_CH3, \tcr{SPI4\_MISO}, SAI2\_FS\_B, FMC\_D10, LCD\_DE \\
+22 & 67          & PE14     & TIM1\_CH4, \tcr{SPI4\_MOSI}, SAI2\_MCK\_B, FMC\_D11, LCD\_CLK \\
+23 & 69          & PB10     & TIM2\_CH3, I2C2\_SCL, \tcr{SPI2\_SCK}/I2S2\_CK, USART3\_TX, OTG\_HS\_ULPI\_D3, ETH\_MII\_RX\_ER, LCD\_G4 \\
+24 & 70          & PB11     & TIM2\_CH4, I2C2\_SDA, USART3\_RX, OTG\_HS\_ULPI\_D4, ETH\_MII\_TX\_EN/ETH\_RMII\_TX\_EN, LCD\_G5 \\
+25 & 74          & PB13     & TIM1\_CH1N, \tcg{SPI2\_SCK}/I2S2\_CK, USART3\_CTS, CAN2\_TX, OTG\_HS\_ULPI\_D6, ETH\_MII\_TXD1/\tco{ETH\_RMII\_TXD1} \\
+26 & 75          & PB14     & TIM1\_CH2N, TIM8\_CH2N, \tcr{SPI2\_MISO}, USART3\_RTS, TIM12\_CH1, OTG\_HS\_DM \\
+27 & 76          & PB15     & RTC\_REFIN, TIM1\_CH3N, TIM8\_CH3N, \tcr{SPI2\_MOSI}/I2S2\_SD, TIM12\_CH2, OTG\_HS\_DP \\
+28 & 81          & PD12     & TIM4\_CH1, LPTIM1\_IN1, I2C4\_SCL, USART3\_RTS, QUADSPI\_BK1\_IO1, SAI2\_FS\_A, FMC\_A17/FMC\_ALE \\
+29 & 82          & PD13     & TIM4\_CH2, LPTIM1\_OUT, I2C4\_SDA, QUADSPI\_BK1\_IO3, SAI2\_SCK\_A, FMC\_A18 \\
+30 & 85          & PD14     & TIM4\_CH3, UART8\_CTS, FMC\_D0 \\
+31 & 86          & PD15     & TIM4\_CH4, UART8\_RTS, FMC\_D1 \\
+32 & 96          & PC6      & TIM3\_CH1, TIM8\_CH1, I2S2\_MCK, USART6\_TX, \tcv{SDMMC1\_D6}, DCMI\_D0, LCD\_HSYNC \\
+33 & 97          & PC7      & TIM3\_CH2, TIM8\_CH2, I2S3\_MCK, USART6\_RX, \tcv{SDMMC1\_D7}, DCMI\_D1, LCD\_G6 \\
+34 & 98          & PC8      & TRACED1, TIM3\_CH3, TIM8\_CH3, UART5\_RTS, USART6\_CK, \tcv{SDMMC1\_D0}, DCMI\_D2 \\
+35 & 99          & PC9      & MCO2, TIM3\_CH4, TIM8\_CH4, I2C3\_SDA, I2S\_CKIN, UART5\_CTS, QUADSPI\_BK1\_IO0, \tcv{SDMMC1\_D1}, DCMI\_D3 \\
+36 & 100         & PA8      & MCO1, TIM1\_CH1, TIM8\_BKIN2, I2C3\_SCL, USART1\_CK, OTG\_FS\_SOF, LCD\_R6 \\
+37 & 101         & \tcpk{PA9}& TIM1\_CH2, I2C3\_SMBA, \tcr{SPI2\_SCK}/I2S2\_CK, USART1\_TX, DCMI\_D0 \\
+38 & 102         & PA10     & TIM1\_CH3, USART1\_RX, \tcpk{OTG\_FS\_ID}, DCMI\_D1 \\
+39 & 103         & PA11     & TIM1\_CH4, USART1\_CTS, CAN1\_RX, \tcpk{OTG\_FS\_DM}, LCD\_R4 \\
+40 & 133         & \tcm{PB3}& JTDO/TRACESWO, TIM2\_CH2, \tcg{SPI1\_SCK}/I2S1\_CK, \tcg{SPI3\_SCK}/I2S3\_CK \\
+41 & 134         & PB4      & NJTRST, TIM3\_CH1, \tcr{SPI1\_MISO}, \tcg{SPI3\_MISO}, SPI2\_NSS/I2S2\_WS \\
+42 & 135         & PB5      & TIM3\_CH2, I2C1\_SMBA, \tcr{SPI1\_MOSI}/I2S1\_SD, \tcg{SPI3\_MOSI}/I2S3\_SD, CAN2\_RX, OTG\_HS\_ULPI\_D7, ETH\_PPS\_OUT, FMC\_SDCKE1, DCMI\_D10 \\
+43 & 136         & PB6      & TIM4\_CH1, HDMI-CEC, I2C1\_SCL, USART1\_TX, CAN2\_TX, QUADSPI\_BK1\_NCS, FMC\_SDNE1, DCMI\_D5 \\
+44 & 137         & PB7      & TIM4\_CH2, I2C1\_SDA, USART1\_RX, FMC\_NL, DCMI\_VSYNC \\
+45 & 139         & PB8      & TIM4\_CH3, TIM10\_CH1, I2C1\_SCL, CAN1\_RX, ETH\_MII\_TXD3, \tcv{SDMMC1\_D4}, DCMI\_D6, LCD\_B6 \\
+46 & 140         & PB9      & TIM4\_CH4, TIM11\_CH1, I2C1\_SDA, SPI2\_NSS/I2S2\_WS, CAN1\_TX, \tcv{SDMMC1\_D5}, DCMI\_D7, LCD\_B7 \\
+\bottomrule
+\end{tabular}
+}~\\
+
+46 pins peuvent être reliées à des sorties de timers, toutefois
+certaines seront inutilisables du fait qu'elles sont soit déjà utilisées
+par un périphérique intégré à la Nucleo comme l'ethernet, l'USB et le
+ST-Link, soit du fait fait qu'elles pourraient être utilisées pour des
+périphériques dont nous aurons besoin comme les bus SPI pour les MCP3208
+ou l'interface SDMMC pour une carte mémoire.\\
+
+J'ai mis ces fonctions en évidence par des couleurs :
+\begin{itemize}
+    \item \tcr{SPI} (Sauf NSS qu'on utilisera pas et qui peut être
+                    déconnecté)
+    \item \tco{ETH}
+    \item \tcpk{USB}
+    \item \tcm{ST-Link}
+    \item \tcv{SDMMC}
+\end{itemize}
+~\\
+
+Après ça il ne reste que 15 lignes sans couleur ce qui serait
+insuffisant mais on peut voir que les timers et les bus SPI on plusieurs
+options de routage, j'en avais donc éliminer quelques uns (en gris) mais
+comme toutes les options pour les SPI ne sont pas présentes ce tableau
+ne permettait pas d'aller au bout.\\
+
+J'ai donc réalisé un tableau à partir de la table 12 \textit{STM32F745xx
+and STM32F746xx alternate function mapping} de la datasheet
+\texttt{DocID027590 Rev 4} en y ajoutant les numéros de broches du
+LQFP144 de la table 10, et les borchages des connecteurs de la
+nucleo-144.\\
+
+Après avoir repéré tous les ports déjà utilisés sur la nucleo ainsi que
+ceux prévus pour relier une carte SD, je me suis efforcé de caser 20
+sorties PWM et 4 bus SPI dans ce qui restait :\\
+\begin{tabular}{crlllr}
+\toprule
+                &           & Function      & Port  & Conn. & Pin   \\
+\midrule
+\MR{20}{Timers} &  1        & TIM1\_CH1     & PE9   & CN10  & 4     \\
+                &  2        & TIM1\_CH2     & PE11  & CN10  & 6     \\
+                &  3        & TIM1\_CH3     & PE13  & CN10  & 10    \\
+                &  4        & TIM1\_CH4     & PE14  & CN10  & 28    \\
+                &  5        & TIM2\_CH1     & PA15  & CN7   & 9     \\
+                &  6        & TIM2\_CH4     & PB11  & CN10  & 34    \\
+                &  7        & TIM3\_CH1     & PA6   & CN7   & 12    \\
+                &  8        & TIM3\_CH3     & PB0   & CN10  & 31    \\
+                &  9        & TIM3\_CH4     & PB1   & CN10  & 7     \\
+                & 10        & TIM4\_CH1     & PD12  & CN10  & 21    \\
+                & 11        & TIM4\_CH2     & PD13  & CN10  & 19    \\
+                & 12        & TIM4\_CH3     & PD14  & CN7   & 16    \\
+                & 13        & TIM4\_CH4     & PD15  & CN7   & 18    \\
+                & 14        & TIM5\_CH1     & PA0   & CN10  & 29    \\
+                & 15        & TIM5\_CH4     & PA3   & CN9   & 1     \\
+                & 16        & TIM8\_CH1     & PC6   & CN7   & 1     \\
+                & 17        & TIM8\_CH2     & PC7   & CN7   & 11    \\
+                & 18        & TIM10\_CH1    & PB8   & CN7   & 2     \\
+                & 19        & TIM11\_CH1    & PB9   & CN7   & 4     \\
+                & 20        & TIM14\_CH1    & PF9   & CN9   & 28    \\
+\midrule
+\MR{12}{SPI}    & \MR{3}{1} & SPI1\_SCK     & PA5   & CN7   & 10    \\
+                &           & SPI1\_MISO    & PB4   & CN7   & 19    \\
+                &           & SPI1\_MOSI    & PB5   & CN7   & 13    \\
+                & \MR{3}{2} & SPI2\_SCK     & PB10  & CN10  & 32    \\
+                &           & SPI2\_MISO    & PC2   & CN10  & 9     \\
+                &           & SPI2\_MOSI    & PB15  & CN7   & 3     \\
+                & \MR{3}{3} & SPI4\_SCK     & PE12  & CN10  & 26    \\
+                &           & SPI4\_MISO    & PE5   & CN9   & 18    \\
+                &           & SPI4\_MOSI    & PE6   & CN9   & 20    \\
+                & \MR{3}{4} & SPI5\_SCK     & PF7   & CN9   & 26    \\
+                &           & SPI5\_MISO    & PF8   & CN9   & 24    \\
+                &           & SPI5\_MOSI    & PF11  & CN12  & 62    \\
+\bottomrule
+\end{tabular}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

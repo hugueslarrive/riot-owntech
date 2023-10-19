@@ -1,0 +1,532 @@
+\subsubsection{native}
+{\footnotesize
+\begin{verbatim}
+hugues@W520:~$ git clone --recursive https://github.com/RIOT-OS/Tutorials
+Clonage dans 'Tutorials'...
+remote: Enumerating objects: 8, done.
+remote: Counting objects: 100% (8/8), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 637 (delta 0), reused 2 (delta 0), pack-reused 629
+Réception d'objets: 100% (637/637), 2.37 MiB | 1.87 MiB/s, fait.
+Résolution des deltas: 100% (357/357), fait.
+Sous-module 'RIOT' (https://github.com/RIOT-OS/RIOT.git) enregistré pour le chemin 'RIOT'
+Clonage dans '/home/hugues/Tutorials/RIOT'...
+remote: Enumerating objects: 1, done.        
+remote: Counting objects: 100% (1/1), done.        
+remote: Total 222536 (delta 0), reused 0 (delta 0), pack-reused 222535        
+Réception d'objets: 100% (222536/222536), 80.89 MiB | 2.07 MiB/s, fait.
+Résolution des deltas: 100% (145265/145265), fait.
+Chemin de sous-module 'RIOT' : '673187e29c06cdba74f0b82c7b30b9de2538531f' extrait
+hugues@W520:~$ cd Tutorials/
+hugues@W520:~/Tutorials$ ls
+overview-net.png  phytec.png  README.md  RIOT  SAM-R21.jpg  slides  task-01  task-02
+task-03  task-04  task-05  task-06  task-07  task-08  task-09  Vagrantfile
+hugues@W520:~/Tutorials$ cd task-01/
+hugues@W520:~/Tutorials/task-01$ make all term
+Building application "Task01" for "native" with MCU "native".
+
+"make" -C /home/hugues/Tutorials/RIOT/boards/native
+"make" -C /home/hugues/Tutorials/RIOT/boards/native/drivers
+"make" -C /home/hugues/Tutorials/RIOT/core
+"make" -C /home/hugues/Tutorials/RIOT/cpu/native
+"make" -C /home/hugues/Tutorials/RIOT/cpu/native/periph
+"make" -C /home/hugues/Tutorials/RIOT/cpu/native/stdio_native
+"make" -C /home/hugues/Tutorials/RIOT/cpu/native/vfs
+"make" -C /home/hugues/Tutorials/RIOT/drivers
+"make" -C /home/hugues/Tutorials/RIOT/drivers/periph_common
+"make" -C /home/hugues/Tutorials/RIOT/sys
+"make" -C /home/hugues/Tutorials/RIOT/sys/auto_init
+"make" -C /home/hugues/Tutorials/RIOT/sys/ps
+"make" -C /home/hugues/Tutorials/RIOT/sys/shell
+"make" -C /home/hugues/Tutorials/RIOT/sys/shell/commands
+   text	   data	    bss	    dec	    hex	filename
+  28944	    728	  47728	  77400	  12e58	/home/hugues/Tutorials/task-01/bin/native/Task01.elf
+/home/hugues/Tutorials/task-01/bin/native/Task01.elf  
+RIOT native interrupts/signals initialized.
+LED_RED_OFF
+LED_GREEN_ON
+RIOT native board initialized.
+RIOT native hardware initialization complete.
+
+main(): This is RIOT! (Version: 2020.04)
+This is Task-01
+> ps
+ps
+	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+	  - | isr_stack            | -        - |   - |   8192 (   -1) | 0x56648400 | 0x56648400
+	  1 | idle                 | pending  Q |  15 |   8192 (  436) | 0x56646120 | 0x56647f80 
+	  2 | main                 | running  Q |   7 |  12288 ( 3148) | 0x56643120 | 0x56645f80 
+	    | SUM                  |            |     |  28672 ( 3584)
+> ^C
+native: exiting
+\end{verbatim}
+}
+
+Jusque-là rien de bien nouveau.
+
+\subsubsection{Nucleo-144}
+
+Il s'agit maintenant de déterminer la variable BOARD
+pour notre matériel :
+{\footnotesize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-01$ ls ../RIOT/boards/
+acd52832                   iotlab-m3            openlabs-kw41z-mini-256kib
+adafruit-clue              Kconfig              openmote-b
+airfy-beacon               limifrog-v1          openmote-cc2538
+arduino-due                lobaro-lorabox       particle-argon
+arduino-duemilanove        lsn50                particle-boron
+arduino-leonardo           maple-mini           particle-xenon
+arduino-mega2560           mbed_lpc1768         pba-d-01-kw2x
+arduino-mkr1000            mcb2388              phynode-kw41z
+arduino-mkrfox1200         mega-xplained        pic32-clicker
+arduino-mkrwan1300         microbit             pic32-wifire
+arduino-mkrzero            microduino-corerf    pinetime
+arduino-nano               msb-430              p-l496g-cell02
+arduino-nano-33-ble        msb-430h             p-nucleo-wb55
+arduino-uno                msba2                pyboard
+arduino-zero               msbiot               README.md
+atmega1284p                mulle                reel
+atmega256rfr2-xpro         native               remote-pa
+atmega328p                 nrf51dk              remote-reva
+avr-rss2                   nrf51dongle          remote-revb
+avsextrem                  nrf52832-mdk         ruuvitag
+b-l072z-lrwan1             nrf52840dk           samd21-xpro
+b-l475e-iot01a             nrf52840-mdk         same54-xpro
+blackpill                  nrf52dk              saml10-xpro
+blackpill-128kib           nrf6310              saml11-xpro
+bluepill                   nucleo-f030r8        saml21-xpro
+bluepill-128kib            nucleo-f031k6        samr21-xpro
+calliope-mini              nucleo-f042k6        samr30-xpro
+cc1312-launchpad           nucleo-f070rb        samr34-xpro
+cc1352-launchpad           nucleo-f072rb        seeeduino_arch-pro
+cc2538dk                   nucleo-f091rc        sensebox_samd21
+cc2650-launchpad           nucleo-f103rb        slstk3401a
+cc2650stk                  nucleo-f207zg        slstk3402a
+chronos                    nucleo-f302r8        sltb001a
+common                     nucleo-f303k8        slwstk6000b-slwrb4150a
+derfmega128                nucleo-f303re        slwstk6000b-slwrb4162a
+derfmega256                nucleo-f303ze        slwstk6220a
+doc.txt                    nucleo-f334r8        sodaq-autonomo
+ek-lm4f120xl               nucleo-f401re        sodaq-explorer
+esp32-heltec-lora32-v2     nucleo-f410rb        sodaq-one
+esp32-mh-et-live-minikit   nucleo-f411re        sodaq-sara-aff
+esp32-olimex-evb           nucleo-f412zg        spark-core
+esp32-ttgo-t-beam          nucleo-f413zh        stk3600
+esp32-wemos-lolin-d32-pro  nucleo-f429zi        stk3700
+esp32-wroom-32             nucleo-f446re        stm32f030f4-demo
+esp32-wrover-kit           nucleo-f446ze        stm32f0discovery
+esp8266-esp-12x            nucleo-f722ze        stm32f3discovery
+esp8266-olimex-mod         nucleo-f746zg        stm32f429i-disc1
+esp8266-sparkfun-thing     nucleo-f767zi        stm32f4discovery
+f4vi1                      nucleo-l031k6        stm32f723e-disco
+feather-m0                 nucleo-l053r8        stm32f769i-disco
+feather-nrf52840           nucleo-l073rz        stm32l0538-disco
+firefly                    nucleo-l152re        stm32l476g-disco
+fox                        nucleo-l412kb        teensy31
+frdm-k22f                  nucleo-l432kc        telosb
+frdm-k64f                  nucleo-l433rc        thingy52
+frdm-kw41z                 nucleo-l452re        ublox-c030-u201
+hamilton                   nucleo-l476rg        udoo
+hifive1                    nucleo-l496zg        usb-kw41z
+hifive1b                   nucleo-l4r5zi        waspmote-pro
+ikea-tradfri               nz32-sc151           wsn430-v1_3b
+im880b                     olimexino-stm32      wsn430-v1_4
+i-nucleo-lrwan1            opencm904            yunjia-nrf51822
+iotlab-a8-m3               openlabs-kw41z-mini  z1
+\end{verbatim}
+}
+Pour nous ce sera donc \enquote{nucleo-f746zg}.\\
+
+Je connecte la carte à mon PC (coté st-link) et c'est parti :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-01$ BOARD=nucleo-f746zg make all flash term
+Building application "Task01" for "nucleo-f746zg" with MCU "stm32f7".
+
+"make" -C /home/hugues/Tutorials/RIOT/boards/nucleo-f746zg
+"make" -C /home/hugues/Tutorials/RIOT/boards/common/nucleo
+"make" -C /home/hugues/Tutorials/RIOT/core
+"make" -C /home/hugues/Tutorials/RIOT/cpu/stm32f7
+"make" -C /home/hugues/Tutorials/RIOT/cpu/cortexm_common
+"make" -C /home/hugues/Tutorials/RIOT/cpu/cortexm_common/periph
+"make" -C /home/hugues/Tutorials/RIOT/cpu/stm32_common
+"make" -C /home/hugues/Tutorials/RIOT/cpu/stm32_common/periph
+"make" -C /home/hugues/Tutorials/RIOT/cpu/stm32f7/periph
+"make" -C /home/hugues/Tutorials/RIOT/drivers
+"make" -C /home/hugues/Tutorials/RIOT/drivers/periph_common
+"make" -C /home/hugues/Tutorials/RIOT/sys
+"make" -C /home/hugues/Tutorials/RIOT/sys/auto_init
+"make" -C /home/hugues/Tutorials/RIOT/sys/isrpipe
+"make" -C /home/hugues/Tutorials/RIOT/sys/newlib_syscalls_default
+"make" -C /home/hugues/Tutorials/RIOT/sys/pm_layered
+"make" -C /home/hugues/Tutorials/RIOT/sys/ps
+"make" -C /home/hugues/Tutorials/RIOT/sys/shell
+"make" -C /home/hugues/Tutorials/RIOT/sys/shell/commands
+"make" -C /home/hugues/Tutorials/RIOT/sys/stdio_uart
+"make" -C /home/hugues/Tutorials/RIOT/sys/tsrb
+   text	   data	    bss	    dec	    hex	filename
+  14940	    132	   2632	  17704	   4528	/home/hugues/Tutorials/task-01/bin/nucleo-f746zg/Task01.elf
+/home/hugues/Tutorials/RIOT/dist/tools/openocd/openocd.sh flash /home/hugues/Tutorials/task-01/bin/nucleo-f746zg/Task01.elf
+### Flashing Target ###
+Open On-Chip Debugger 0.10.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+hla_swd
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+adapter speed: 2000 kHz
+adapter_nsrst_delay: 100
+srst_only separate srst_nogate srst_open_drain connect_deassert_srst
+srst_only separate srst_nogate srst_open_drain connect_deassert_srst
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : Unable to match requested speed 2000 kHz, using 1800 kHz
+Info : Unable to match requested speed 2000 kHz, using 1800 kHz
+Info : clock speed 1800 kHz
+Info : STLINK v2 JTAG v29 API v2 SWIM v18 VID 0x0483 PID 0x374B
+Info : using stlink api v2
+Info : Target voltage: 3.247431
+Warn : Silicon bug: single stepping will enter pending exception handler!
+Info : stm32f7x.cpu: hardware has 8 breakpoints, 4 watchpoints
+    TargetName         Type       Endian TapName            State       
+--  ------------------ ---------- ------ ------------------ ------------
+ 0* stm32f7x.cpu       hla_target little stm32f7x.cpu       reset
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x0800a83c msp: 0x20003410
+auto erase enabled
+Info : device id = 0x10016449
+Info : flash size = 1024kbytes
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x20000046 msp: 0x20003410
+wrote 32768 bytes from file /home/hugues/Tutorials/task-01/bin/nucleo-f746zg/Task01.elf in 0.811100s (39.453 KiB/s)
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20003410
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20003410
+verified 15072 bytes in 0.128518s (114.527 KiB/s)
+shutdown command invoked
+Done flashing
+/home/hugues/Tutorials/RIOT/dist/tools/pyterm/pyterm -p "/dev/ttyACM0" -b "115200" 
+Twisted not available, please install it if you want to use pyterm's JSON capabilities
+2020-05-04 17:36:35,989 # Connect to serial port /dev/ttyACM0
+Welcome to pyterm!
+Type '/exit' to exit.
+ps
+2020-05-04 17:36:50,692 # ps
+2020-05-04 17:36:50,700 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-04 17:36:50,708 # 	  - | isr_stack            | -        - |   - |    512 (  116) | 0x20000000 | 0x200001c8
+2020-05-04 17:36:50,716 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003c0 | 0x2000043c 
+2020-05-04 17:36:50,724 # 	  2 | main                 | running  Q |   7 |   1536 (  652) | 0x200004c0 | 0x20000924 
+2020-05-04 17:36:50,729 # 	    | SUM                  |            |     |   2304 (  900)
+> reboot
+2020-05-04 17:41:10,933 #  reboot
+2020-05-04 17:41:10,940 # main(): This is RIOT! (Version: 2020.04)
+2020-05-04 17:41:10,941 # This is Task-01
+> /exit
+2020-05-04 17:46:17,710 # Exiting Pyterm
+hugues@W520:~/Tutorials/task-01$ /home/hugues/Tutorials/RIOT/dist/tools/pyterm/pyterm -p "/dev/ttyACM0" -b "115200"
+Twisted not available, please install it if you want to use pyterm's JSON capabilities
+2020-05-04 17:48:12,032 # Connect to serial port /dev/ttyACM0
+Welcome to pyterm!
+Type '/exit' to exit.
+> /exit
+2020-05-04 17:48:33,838 # Exiting Pyterm
+hugues@W520:~/Tutorials/task-01$
+\end{verbatim}
+}
+Que dire ? Ça fonctionne tout seul !\\
+
+\subsubsection{bluepill (STM32F103C8T6)}
+
+Cette carte très bon marché (encore moins cher qu'un nano atmega328p) pourrait être
+utilisée dans une version mono-bras du convertisseur. J'envisage de démarrer le
+développement du nouveau firmware par le remplacement du nano par cette carte sur
+un prototype OwnWall dont je dispose en attendant le premier prototype OwnTech, le
+CAN (MCP3208) étant identique à ceux qui seront utilisé.
+
+{\scriptsize
+\begin{verbatim}
+### Flashing Target ###
+Open On-Chip Debugger 0.10.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+hla_swd
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Error: open failed
+in procedure 'init' 
+in procedure 'ocd_bouncer'
+
+make: *** [/home/hugues/Tutorials/task-01/../RIOT/Makefile.include:667: flash] Error 1
+\end{verbatim}
+}
+Ça n'a pas fonctionné, peut-être à cause du clône de st-link v2 Chinois à 2\euro...\\
+
+Chaque dossier dans RIOT/boards contient un fichier doc.txt, pour la bluepill j'y
+trouve l'info suivante :
+\begin{verbatim}
+## Flashing
+
+To program and debug the board you need a SWD capable debugger. The
+easiest way is using [OpenOCD][OpenOCD]. By default RIOT uses the hardware
+reset signal and connects to the chip under reset for flashing. This is
+required to reliably connect to the device even when the MCU is in a low power
+mode. Therefore not only SWDIO and SWCLK, but also the RST pin of your
+debugger need to be connected to the board.
+\end{verbatim}
+
+J'ai donc commencé par ajouter le fil de reset manquant dans mon câblage, mais ça n'a
+pas résolu le problème.\\
+
+Je me suis donc penché sur OpenOCD en essayant de le lancer directement :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-01$ openocd -f /usr/share/openocd/scripts/interface/stlink-v2.cfg \
+-f /usr/share/openocd/scripts/target/stm32f1x.cfg 
+Open On-Chip Debugger 0.10.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+Info : auto-selecting first available session transport "hla_swd". To override use 'transport select <transport>'.
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+none separate
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v2 JTAG v29 API v2 SWIM v7 VID 0x0483 PID 0x3748
+Info : using stlink api v2
+Info : Target voltage: 3.166154
+Warn : UNEXPECTED idcode: 0x2ba01477
+Error: expected 1 of 1: 0x1ba01477
+in procedure 'init' 
+in procedure 'ocd_bouncer'
+\end{verbatim}
+}
+Ça n'a pas fonctionné non plus mais l'erreur est différente, le voyant du stlink est
+passé du rouge au bleue et il semble que ma bluepill n'a pas le bon idcode. J'ai donc
+remplacé 0x1ba01477 par 0x2ba01477 dans
+\texttt{/usr/share/openocd/scripts/target/stm32f1x.cfg}, après quoi openocd semble se
+lancer correctement.\\
+
+J'obtiens malgré tout toujours la même erreur avec la commande make flash.\\
+
+Dans le fichier \texttt{/RIOT/dist/tools/openocd/openocd.sh} j'observe que la
+commande utilise la constante OPENOCD\_ADAPTER\_INIT, j'effectue donc une recherche
+dans le code source :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-01$ grep -r OPENOCD_ADAPTER_INIT ../RIOT/*
+../RIOT/dist/tools/openocd/openocd.sh:: ${OPENOCD_ADAPTER_INIT:=}
+../RIOT/dist/tools/openocd/openocd.sh:            ${OPENOCD_ADAPTER_INIT} \
+../RIOT/dist/tools/openocd/openocd.sh:            ${OPENOCD_ADAPTER_INIT} \
+../RIOT/dist/tools/openocd/openocd.sh:            ${OPENOCD_ADAPTER_INIT} \
+../RIOT/dist/tools/openocd/openocd.sh:            ${OPENOCD_ADAPTER_INIT} \
+../RIOT/dist/tools/openocd/openocd.sh:            ${OPENOCD_ADAPTER_INIT} \
+../RIOT/dist/tools/openocd/openocd.sh:            ${OPENOCD_ADAPTER_INIT} \
+../RIOT/dist/tools/buildsystem_sanity_check/check.sh:UNEXPORTED_VARIABLES+=('OPENOCD_ADAPTER_INIT')
+../RIOT/makefiles/tools/openocd.inc.mk:# Export OPENOCD_ADAPTER_INIT to required targets
+../RIOT/makefiles/tools/openocd.inc.mk:$(call target-export-variables,$(OPENOCD_TARGETS),OPENOCD_ADAPTER_INIT)
+../RIOT/makefiles/tools/openocd-adapters/stlink.inc.mk:OPENOCD_ADAPTER_INIT ?= \
+../RIOT/makefiles/tools/openocd-adapters/stlink.inc.mk:  OPENOCD_ADAPTER_INIT += -c 'hla_serial $(DEBUG_ADAPTER_ID)'
+../RIOT/makefiles/tools/openocd-adapters/iotlab.inc.mk:OPENOCD_ADAPTER_INIT ?= -c 'source [find interface/ftdi/iotlab-usb.cfg]'
+../RIOT/makefiles/tools/openocd-adapters/iotlab.inc.mk:  OPENOCD_ADAPTER_INIT += -c 'ftdi_serial $(DEBUG_ADAPTER_ID)'
+../RIOT/makefiles/tools/openocd-adapters/jlink.inc.mk:OPENOCD_ADAPTER_INIT ?= -c 'source [find interface/jlink.cfg]'
+../RIOT/makefiles/tools/openocd-adapters/jlink.inc.mk:  OPENOCD_ADAPTER_INIT += -c 'jlink serial $(DEBUG_ADAPTER_ID)'
+../RIOT/makefiles/tools/openocd-adapters/dap.inc.mk:OPENOCD_ADAPTER_INIT ?= -c 'source [find interface/cmsis-dap.cfg]'
+../RIOT/makefiles/tools/openocd-adapters/dap.inc.mk:  OPENOCD_ADAPTER_INIT += -c 'cmsis_dap_serial $(DEBUG_ADAPTER_ID)'
+../RIOT/makefiles/tools/openocd-adapters/sysfs_gpio.inc.mk:OPENOCD_ADAPTER_INIT ?= \
+../RIOT/makefiles/tools/openocd-adapters/mulle.inc.mk:OPENOCD_ADAPTER_INIT ?= -f '$(RIOTBASE)/boards/mulle/dist/openocd/mulle-programmer-$(PROGRAMMER_VERSION).cfg'
+../RIOT/makefiles/tools/openocd-adapters/mulle.inc.mk:  OPENOCD_ADAPTER_INIT += -c 'ftdi_serial $(DEBUG_ADAPTER_ID)'
+../RIOT/makefiles/tools/openocd-adapters/raspi.inc.mk:OPENOCD_ADAPTER_INIT ?= \
+hugues@W520:~/Tutorials/task-01$ cat ../RIOT/makefiles/tools/openocd-adapters/stlink.inc.mk
+# ST-Link debug adapter
+# Use st-link v2-1 by default
+STLINK_VERSION ?= 2-1
+
+# Use STLINK_VERSION to select which stlink version is used
+OPENOCD_ADAPTER_INIT ?= \
+  -c 'source [find interface/stlink-v$(STLINK_VERSION).cfg]' \
+  -c 'transport select hla_swd'
+# Add serial matching command, only if DEBUG_ADAPTER_ID was specified
+ifneq (,$(DEBUG_ADAPTER_ID))
+  OPENOCD_ADAPTER_INIT += -c 'hla_serial $(DEBUG_ADAPTER_ID)'
+endif
+
+# if no openocd specific configuration file, check for default locations:
+# 1. Using the default dist/openocd.cfg (automatically set by openocd.sh)
+# 2. Using the common cpu specific config file
+ifeq (,$(OPENOCD_CONFIG))
+  # if no openocd default configuration is provided by the board,
+  # use the STM32 common one
+  ifeq (0,$(words $(wildcard $(BOARDSDIR)/$(BOARD)/dist/openocd.cfg)))
+    OPENOCD_CONFIG = $(RIOTBASE)/boards/common/stm32/dist/$(CPU).cfg
+  endif
+endif
+\end{verbatim}
+}
+Je constate qu'il cherche à utilise la version 2-1 de l'adaptateur stlink qui est
+adapté pour l'adaptateur intégré à la nucleo mais pas pour mon adaptateur à 2\euro
+(v2 tout court).\\
+
+Je retente donc en fixant cette constante dans ma commande make :
+{\scriptsize
+\begin{verbatim}
+### Flashing Target ###
+Open On-Chip Debugger 0.10.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+hla_swd
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v2 JTAG v29 API v2 SWIM v7 VID 0x0483 PID 0x3748
+Info : using stlink api v2
+Info : Target voltage: 3.165663
+Error: init mode failed (unable to connect to the target)
+in procedure 'init' 
+in procedure 'ocd_bouncer'
+
+make: *** [/home/hugues/Tutorials/task-01/../RIOT/Makefile.include:667: flash] Error 1
+\end{verbatim}
+}
+Cette fois il semble reconnaître convenablement mon stlink mais n'arrive pas à se
+connecter au stm32, je fais un essai avec un reset manuel :
+{\scriptsize
+\begin{verbatim}
+### Flashing Target ###
+Open On-Chip Debugger 0.10.0
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+hla_swd
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : The selected transport took over low-level target control. The results might differ compared to plain JTAG/SWD
+adapter speed: 1000 kHz
+adapter_nsrst_delay: 100
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+srst_only separate srst_nogate srst_open_drain connect_assert_srst
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : Unable to match requested speed 1000 kHz, using 950 kHz
+Info : clock speed 950 kHz
+Info : STLINK v2 JTAG v29 API v2 SWIM v7 VID 0x0483 PID 0x3748
+Info : using stlink api v2
+Info : Target voltage: 3.159513
+Info : STM32F103C8Tx.cpu: hardware has 6 breakpoints, 4 watchpoints
+    TargetName         Type       Endian TapName            State       
+--  ------------------ ---------- ------ ------------------ ------------
+ 0* STM32F103C8Tx.cpu  hla_target little STM32F103C8Tx.cpu  reset
+target halted due to debug-request, current mode: Thread 
+xPSR: 0x01000000 pc: 0x08000450 msp: 0x20000200
+auto erase enabled
+Info : device id = 0x20036410
+Info : flash size = 64kbytes
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000003a msp: 0x20000200
+wrote 14336 bytes from file /home/hugues/Tutorials/task-01/bin/bluepill/Task01.elf in 0.483442s (28.959 KiB/s)
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20000200
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20000200
+verified 14336 bytes in 0.249575s (56.095 KiB/s)
+target halted due to breakpoint, current mode: Thread 
+xPSR: 0x61000000 pc: 0x2000002e msp: 0x20000200
+shutdown command invoked
+Done flashing
+\end{verbatim}
+}
+Après plusieurs essais je parviens à relâcher le reset au bon moment et ça flash. Le
+pin reset de ce st-link ne semble donc pas fonctionner. Après démontage il est
+seulement connecté à une résistance de pull-up.\\
+
+On peut trouver le schéma du st-link/v2-1 dans le manuel de la nucleo-144, et on y
+voit que le reset est sensé être connecté à la pin 18 du microcontrôleur interne ce
+qui n'est pas le cas. Deux coups de fer à souder plus tard (j'ai vite regretté de
+m'être lancé dans une soudure sur un pas de 0,5mm en télétravail, avec une panne de
+0,5 et de la soudure de 0,7 sans flux et sans loupe) j'ai pu de nouveau
+tester : cette fois c'est passé tout seul.\\
+
+Nouveau problème avec pyterm cette fois : \texttt{No such file or directory:
+'/dev/ttyACM0'}. Ce stlink n'intègre pas d'adaptateur série mais j'ai un dongle
+ch340 que je peux utiliser pour ça. Une petite recherche m'indique : \enquote{The
+default UART port used is UART2, which uses pins A2 (TX) and A3 (RX).}.\\
+
+Le CH340 n'est pas attaché à /dev/ttyACM0 comme le st-link v2-1 de la nucleo mais à
+/dev/ttyUSB0. Il faut donc ajouter PORT\_LINUX=/dev/ttyUSB0 pour la commande make ce
+qui nous donne :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-01$ BOARD=bluepill STLINK_VERSION=2 PORT_LINUX=/dev/ttyUSB0 make all flash term
+\end{verbatim}
+}
+Bien sûr on peut mettre tout ça dans le Makefile :
+\begin{lstlisting}[language=make]
+# If no BOARD is found in the environment, use this default:
+BOARD ?= bluepill
+
+# To use chinese st-link v2 and ch340 dongle with bluepill
+ifeq ($(BOARD),bluepill)
+	STLINK_VERSION=2
+	PORT_LINUX=/dev/ttyUSB0
+endif
+\end{lstlisting}
+
+Ainsi je n'aurai plus qu'à tapper la commande \texttt{make all flash term} pour
+utiliser la bluepill par défaut (je me suis fais gronder d'avoir emprunté le câble
+de l'appareil photo de ma femme pour relier la nucleo) en attendant de m'en
+procurer un.\\
+
+Voilà ce que ça donne au niveau de la pile :
+{\scriptsize
+\begin{verbatim}
+2020-05-06 12:20:49,693 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-06 12:20:49,701 # 	  - | isr_stack            | -        - |   - |    512 (  116) | 0x20000000 | 0x200001c8
+2020-05-06 12:20:49,709 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003c0 | 0x2000043c 
+2020-05-06 12:20:49,718 # 	  2 | main                 | running  Q |   7 |   1536 (  660) | 0x200004c0 | 0x20000924 
+2020-05-06 12:20:49,724 # 	    | SUM                  |            |     |   2304 (  908)
+\end{verbatim}
+}
+
+\subsubsection{arduino-nano (ATmega328p)}
+
+Disons \enquote{pour le fun}, et pour voir ce que ça donne sur un $\mu$C
+8 bits avec seulement 2Ko de RAM.\\
+
+La commande toujours aussi simple :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-01$ BOARD=arduino-nano make all flash term
+\end{verbatim}
+}
+Et le résultat :
+{\scriptsize
+\begin{verbatim}
+   text	   data	    bss	    dec	    hex	filename
+   7094	    852	    961	   8907	   22cb	/home/hugues/Tutorials/task-01/bin/arduino-nano/Task01.elf
+...
+avrdude: writing flash (7946 bytes)
+...
+2020-05-06 12:35:58,933 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-06 12:35:59,032 # 	  1 | idle                 | pending  Q |  15 |    128 (   86) |      0x454 |      0x481 
+2020-05-06 12:35:59,132 # 	  2 | main                 | running  Q |   7 |    640 (  306) |      0x4d4 |      0x64b 
+2020-05-06 12:35:59,193 # 	    | SUM                  |            |     |    768 (  392)
+\end{verbatim}
+}
+L'utilisation mémoire (data+bss) est importante 1813 sur 2048 mais ça
+passe...

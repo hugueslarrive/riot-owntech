@@ -1,0 +1,111 @@
+Utiliser \texttt{xtimer} pour créer un thread qui affiche le temps
+système courant toutes les 2 secondes.\\
+
+\subsubsection{Thread handler}
+{\small
+\begin{lstlisting}
+void *timer2s_handler(void *arg)
+{
+    /* Thread that print the current system time every 2 seconds... */
+    (void)arg;
+    
+    xtimer_ticks32_t last_wakeup = xtimer_now();
+
+    while (1) {
+        printf("Current system time is %lu \(\mu\)s\n", xtimer_now_usec());
+        xtimer_periodic_wakeup(&last_wakeup, PERIOD_US);
+    }
+
+    return NULL;
+}
+\end{lstlisting}
+}
+\subsubsection{nucleo}
+{\scriptsize
+\begin{verbatim}
+2020-06-17 15:39:54,773 # reboot
+2020-06-17 15:39:54,779 # main(): This is RIOT! (Version: 2020.04)
+2020-06-17 15:39:54,781 # This is Task-04
+2020-06-17 15:39:54,784 # Current system time is 5036 \(\mu\)s
+> 2020-06-17 15:39:56,784 #  Current system time is 2005053 \(\mu\)s
+2020-06-17 15:39:58,784 # Current system time is 4005052 \(\mu\)s
+2020-06-17 15:40:00,784 # Current system time is 6005052 \(\mu\)s
+ps
+2020-06-17 15:40:02,222 # ps
+2020-06-17 15:40:02,230 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-06-17 15:40:02,238 # 	  - | isr_stack            | -        - |   - |    512 (  140) | 0x20000000 | 0x200001c8
+2020-06-17 15:40:02,246 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003e8 | 0x20000464 
+2020-06-17 15:40:02,254 # 	  2 | main                 | running  Q |   7 |   1536 (  660) | 0x200004e8 | 0x2000093c 
+2020-06-17 15:40:02,262 # 	  3 | timer2s              | bl mutex _ |   6 |   1024 (  356) | 0x20000aec | 0x20000e04 
+2020-06-17 15:40:02,268 # 	    | SUM                  |            |     |   3328 ( 1288)
+> 2020-06-17 15:40:02,784 #  Current system time is 8005052 \(\mu\)s
+2020-06-17 15:40:04,784 # Current system time is 10005052 \(\mu\)s
+2020-06-17 15:40:06,784 # Current system time is 12005053 \(\mu\)s
+\end{verbatim}
+}
+
+Le printf imprime sur la console à 115200 bauds ce qui prend environ
+87 $\mu$s par caractère. La fonction \texttt{xtimer\_periodic\_wakeup()}
+se débrouille pour compenser ça. Le chiffre des unités oscille entre 2
+et 3, il y a donc une légère imprécision.\\
+
+\subsubsection{native}
+Il y a une petite erreur à la compilation au niveau du printf, il faut
+remplacer \%lu par \%u pour que ça fonctionne.
+{\scriptsize
+\begin{verbatim}
+main(): This is RIOT! (Version: 2020.04)
+This is Task-04
+Current system time is 66 \(\mu\)s
+> Current system time is 2000220 \(\mu\)s
+Current system time is 4000204 \(\mu\)s
+Current system time is 6000216 \(\mu\)s
+ps
+ps
+	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+	  - | isr_stack            | -        - |   - |   8192 (   -1) | 0x565f4380 | 0x565f4380
+	  1 | idle                 | pending  Q |  15 |   8192 (  436) | 0x565f20a0 | 0x565f3f00 
+	  2 | main                 | running  Q |   7 |  12288 ( 3212) | 0x565ef0a0 | 0x565f1f00 
+	  3 | timer2s              | bl mutex _ |   6 |   8192 ( 2452) | 0x565ed0a0 | 0x565eef00 
+	    | SUM                  |            |     |  36864 ( 6100)
+> Current system time is 8000134 \(\mu\)s
+Current system time is 10000222 \(\mu\)s
+Current system time is 12000209 \(\mu\)s
+Current system time is 14000232 \(\mu\)s
+Current system time is 16000342 \(\mu\)s
+Current system time is 18000165 \(\mu\)s
+\end{verbatim}
+}
+
+Là c'est beaucoup moins stable ce qui est normal étant donné que linux
+n'est pas un système temps réel. Un \texttt{renice} du processus linux
+avec un priorité haute (-20) ne change pas grand chose. La gestion d'énergie
+change sans cesse la fréquence du processeur sur ma machine, peut être
+qu'une fréquence fixe améliorerait les chose mais ce n'est pas faisable
+sans passer par le BIOS avec ce processeur...
+
+\subsubsection{arduino-nano}
+{\scriptsize
+\begin{verbatim}
+2020-06-17 16:35:00,748 # main(): This is RIOT! (Version: 2020.04)
+2020-06-17 16:35:00,749 # This is Task-04
+2020-06-17 16:35:00,781 # Current system time is 59124 \(\mu\)s
+> 2020-06-17 16:35:02,781 #  Current system time is 2059280 \(\mu\)s
+2020-06-17 16:35:04,784 # Current system time is 4059280 \(\mu\)s
+2020-06-17 16:35:06,786 # Current system time is 6059280 \(\mu\)s
+2020-06-17 16:35:08,788 # Current system time is 8059280 \(\mu\)s
+2020-06-17 16:35:10,792 # Current system time is 10059280 \(\mu\)s
+ps
+2020-06-17 16:35:11,199 # ps
+2020-06-17 16:35:11,266 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-06-17 16:35:11,366 # 	  1 | idle                 | pending  Q |  15 |    128 (   94) |      0x562 |      0x58f 
+2020-06-17 16:35:11,466 # 	  2 | main                 | running  Q |   7 |    384 (  364) |      0x5e2 |      0x659 
+2020-06-17 16:35:11,566 # 	  3 | timer2s              | bl mutex _ |   6 |    256 (  142) |      0x462 |      0x4d5 
+2020-06-17 16:35:11,621 # 	    | SUM                  |            |     |    768 (  600)
+> 2020-06-17 16:35:12,794 #  Current system time is 12059280 \(\mu\)s
+2020-06-17 16:35:14,797 # Current system time is 14059280 \(\mu\)s
+2020-06-17 16:35:16,799 # Current system time is 16059280 \(\mu\)s
+2020-06-17 16:35:18,802 # Current system time is 18059280 \(\mu\)s
+\end{verbatim}
+}
+Ça fonctionne avec une stabilité surprenante (supérieure au stm32 !).

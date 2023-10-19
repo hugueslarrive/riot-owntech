@@ -1,0 +1,183 @@
+\paragraph{Architecture \enquote{native}\\\\}
+Le réseau sur architecture \enquote{native} a déjà été traité à la
+section 1.1.
+
+\paragraph{Matériel réel\\\\}
+La seule carte avec une interface réseau dont je dispose est la
+nucleo-f746zg.\\
+
+Malheureusement ça ne fonctionne pas tout seul : tout semble bien se
+passer pendant la compilation mais la commande \texttt{ifconfig} ne
+retourne rien.\\
+
+Il y a une page \enquote{Driver for stm32 ethernet} dans la
+documentation mais elle est vide. Dans le code source, on trouve le
+dossier correspondant \texttt{drivers/stm32\_eth}.\\
+
+Une petite recherche :
+\begin{verbatim}
+hugues@W520:~/Tutorials/RIOT$ grep -r stm32_eth boards/*
+boards/nucleo-f207zg/Makefile.dep:  USEMODULE += stm32_eth
+boards/nucleo-f767zi/Makefile.dep:  USEMODULE += stm32_eth
+\end{verbatim}
+
+La plus proche des 2 est la nucleo-f767zi.
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/RIOT$ diff -u boards/nucleo-f746zg/Makefile.features boards/nucleo-f767zi/Makefile.features 
+--- boards/nucleo-f746zg/Makefile.features	2020-05-04 17:04:48.253357832 +0200
++++ boards/nucleo-f767zi/Makefile.features	2020-05-04 17:04:48.253357832 +0200
+@@ -1,13 +1,16 @@
+ CPU = stm32f7
+-CPU_MODEL = stm32f746zg
++CPU_MODEL = stm32f767zi
+ 
+ # Put defined MCU peripherals here (in alphabetical order)
++FEATURES_PROVIDED += periph_dma
+ FEATURES_PROVIDED += periph_i2c
+ FEATURES_PROVIDED += periph_rtc
+ FEATURES_PROVIDED += periph_rtt
++FEATURES_PROVIDED += periph_spi
+ FEATURES_PROVIDED += periph_timer
+ FEATURES_PROVIDED += periph_uart
+ FEATURES_PROVIDED += periph_usbdev
++FEATURES_PROVIDED += periph_eth
+ 
+ # Put other features for this board (in alphabetical order)
+ FEATURES_PROVIDED += riotboot
+\end{verbatim}
+}
+Le support de la nucleo-f746zg est donc incomplet, en plus de l'ethernet,
+on aura aussi besoin du SPI et du PWM (présent pour la nucleo-f207zg).\\
+
+Le stm32f746zg et le stm32f767zi étant très proche, je tente ma chance
+en utilisant \texttt{BOARD=nucleo-f767zi make all flash term} dans un
+premier temps. Là le \texttt{ifconfig} a l'air de fonctionner :
+\begin{verbatim}
+2020-05-14 01:36:38,623 # This is Task-05
+> ifconfig
+2020-05-14 01:36:53,581 #  ifconfig
+2020-05-14 01:36:53,585 # Iface  4  HWaddr: 06:17:2A:15:1C:41 
+2020-05-14 01:36:53,589 #           L2-PDU:1500 Source address length: 6
+2020-05-14 01:36:53,590 #           
+\end{verbatim}
+
+Lorsque je connecte un câble réseau je vois immédiatement un tas de
+paquets reçus par pktdump.\\
+
+Comme je n'ai qu'une carte, je vais lancer un riot native pour essayer
+de les faire communiquer. Il faut d'abord configurer une interface tap
+et un bridge :
+\begin{verbatim}
+root@W520:/home/hugues/Tutorials/RIOT# tunctl -u hugues
+Set 'tap0' persistent and owned by uid 1000
+root@W520:/home/hugues/Tutorials/RIOT# ifconfig tap0 up
+root@W520:/home/hugues/Tutorials/RIOT# brctl addbr br0
+root@W520:/home/hugues/Tutorials/RIOT# ifconfig br0 up
+root@W520:/home/hugues/Tutorials/RIOT# brctl addif br0 tap0 wlp3s0
+can't add wlp3s0 to bridge br0: Operation not supported
+
+\end{verbatim}
+
+J'ai dû débrancher mon portable du réseau filaire pour brancher la
+nucleo, il n'est malheureusement pas possible de bridger l'interface
+wifi (sauf si elle était en mode AP) pour pouvoir faire communiquer la
+carte avec un riot native. Par contre mon routeur maison tourne sous
+linux et je l'utilise parfois pour faire du vpn niveau 2 avec ssh.
+Je vais donc créer un tunnel ethernet vers mon routeur avec un bridge à
+chaque extrémité :
+{\scriptsize
+\begin{verbatim}
+root@W520:/home/hugues/Tutorials/task-05# ssh 192.168.21.254 -o Tunnel=ethernet -w 1:1 -f sleep 1
+root@W520:/home/hugues/Tutorials/task-05# ssh 192.168.21.254 ifconfig tap1 up
+root@W520:/home/hugues/Tutorials/task-05# ssh 192.168.21.254 brctl addif br0 tap1
+root@W520:/home/hugues/Tutorials/task-05# ifconfig tap1 up
+root@W520:/home/hugues/Tutorials/task-05# brctl addif br0 tap1
+root@W520:/home/hugues/Tutorials/task-05# ifconfig tap0
+tap0: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        ether fa:1b:cf:b5:6f:ef  txqueuelen 1000  (Ethernet)
+\end{verbatim}
+}
+J'en ai profité pour récupérer l'adresse ethernet de l'interface qui
+sera utilisée par le riot native qu'il ne reste plus qu'à lancer :
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-05$ BOARD=native make all term PORT=tap0
+\end{verbatim}
+
+Maintenant j'essaie d'envoyer un paquet avec
+\texttt{txtsnd 4 bcast test}.\\
+
+D’abord de la nucleo $\rightarrow$ native :
+{\scriptsize
+\begin{verbatim}
+PKTDUMP: data received:
+~~ SNIP  0 - size:  46 byte, type: NETTYPE_UNDEF (0)
+00000000  74  65  73  74  00  00  00  00  00  00  00  00  00  00  00  00
+00000010  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00
+00000020  00  00  00  00  00  00  00  00  00  00  00  00  00  00
+~~ SNIP  1 - size:  20 byte, type: NETTYPE_NETIF (-1)
+if_pid: 4  rssi: 0  lqi: 0
+flags: 0x0
+src_l2addr: 06:17:2A:15:1C:41
+dst_l2addr: FF:FF:FF:FF:FF:FF
+~~ PKT    -  2 snips, total size:  66 byte
+\end{verbatim}
+}
+Puis de native $\rightarrow$ nucleo :
+{\scriptsize
+\begin{verbatim}
+2020-05-14 02:00:16,095 # PKTDUMP: data received:
+2020-05-14 02:00:16,100 # ~~ SNIP  0 - size:  46 byte, type: NETTYPE_UNDEF (0)
+2020-05-14 02:00:16,106 # 00000000  74  65  73  74  00  00  00  00  00  00  00  00  00  00  00  00
+2020-05-14 02:00:16,113 # 00000010  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00
+2020-05-14 02:00:16,119 # 00000020  00  00  00  00  00  00  00  00  00  00  00  00  00  00
+2020-05-14 02:00:16,124 # ~~ SNIP  1 - size:  20 byte, type: NETTYPE_NETIF (-1)
+2020-05-14 02:00:16,126 # if_pid: 4  rssi: 0  lqi: 0
+2020-05-14 02:00:16,127 # flags: 0x0
+2020-05-14 02:00:16,131 # src_l2addr: FA:1B:CF:B5:6F:F0
+2020-05-14 02:00:16,133 # dst_l2addr: FF:FF:FF:FF:FF:FF
+2020-05-14 02:00:16,136 # ~~ PKT    -  2 snips, total size:  66 byte
+\end{verbatim}
+}
+Enfin un peu de nettoyage dans les config réseau :
+{\tiny
+\begin{verbatim}
+root@W520:/home/hugues/Tutorials/task-05# ssh 192.168.21.254 brctl delif br0 tap1
+root@W520:/home/hugues/Tutorials/task-05# ssh 192.168.21.254 ifconfig tap1 down
+root@W520:/home/hugues/Tutorials/task-05# brctl delif br0 tap0 tap1
+root@W520:/home/hugues/Tutorials/task-05# ifconfig tap1 down
+root@W520:/home/hugues/Tutorials/task-05# kill `ps aux | grep 'ssh 192.168.21.254 -o Tunnel=ethernet -w 1:1 -f sleep 1' | grep -v grep | awk '{printf $2}'`
+root@W520:/home/hugues/Tutorials/task-05# ifconfig tap0 down
+root@W520:/home/hugues/Tutorials/task-05# ifconfig br0 down
+root@W520:/home/hugues/Tutorials/task-05# brctl delbr br0
+root@W520:/home/hugues/Tutorials/task-05# tunctl -d tap0
+Set 'tap0' nonpersistent
+\end{verbatim}
+}
+
+Remarque : 
+Finalement je me suis un peu emballé dans la config réseau, le bridge
+local était inutile (je l'avais créé dans l'optique de bridger tap0 et
+mon interface wifi), j'aurai pu connecter directement le riot native au
+bout du tunnel ethernet ssh (tap1).\\
+
+Aux cours de ces expérimentations j'ai parfois rencontré un problème
+après une reprogrammation, un reset, ou même un reboot : seul le voyant
+orange du RJ45 clignote, le voyant vert reste éteind, le
+\texttt{ifconfig} fonctionne bien mais aucun paquet n'est reçu et il est
+impossible d'en émettre. J'ai effectué 10 resets et 10 reboots et 10
+flashage d'affilés, dans tous les cas le problème s'est produit 4 fois
+sur 10.\\
+
+Le problème est connu chez RIOT pour la nucleo-f767zi :\\
+\url{https://github.com/RIOT-OS/RIOT/issues/13490}.\\
+
+On peut trouver le même genre de problème sur la nucleo-f746zg avec Mbed
+OS décrit ici :\\
+\url{https://os.mbed.com/questions/77138/EthernetInterface-unreliable-on
+-NUCLEO-F/}.\\
+
+Et là avec lwIP \enquote{Bare Metal} sauf que ça fonctionne sur la
+nucléo et pas sur une autre carte de dev :\\
+{\scriptsize\url{https://stackoverflow.com/questions/55260931/stm32h7-
+lan8742-lwip-only-works-fine-after-power-up-not-after-reset}}.

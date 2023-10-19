@@ -1,0 +1,93 @@
+\documentclass[a4paper,12pt, twoside]{article}
+
+\input{extras/definitions_and_includes.tex}
+\usepackage{amssymb}
+
+%\usepackage[firstpage]{draftwatermark}
+
+\usepackage{alltt}
+
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cm}{\textcolor{green}{\ding{51}}}%
+\newcommand{\xm}{\textcolor{red}{\ding{55}}}%
+
+
+\title{Notes sur les tutoriels de RIOT}
+\author{Hugues Larrive <hlarrive@laas.fr>}
+\date{\today}	%defines the date of the document - leave empty for no date
+
+
+\begin{document}
+
+\maketitle{}
+
+\vspace*{\stretch{1}}
+
+\begin{abstract}
+    Voilà mes notes personnelles sur les tutos de riot os :
+    \url{https://github.com/RIOT-OS/Tutorials}. Seuls les six
+    premiers sont traités.\\
+    
+    J'ai testé les quatre premiers sur plusieurs cartes, ce qui m'a
+    permis d'approfondir certains mécanismes du système comme la gestion
+    de la mémoire et le système de compilation.
+\end{abstract}
+
+\vspace*{\stretch{1}}
+
+{\footnotesize
+\begin{verbatim}
+    Author: Hugues Larrive <hugues.larrive@laas.fr>
+    
+	Copyright (C) 2020 LAAS-CNRS.
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.3
+	or any later version published by the Free Software Foundation;
+	with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+	A copy of the license is included in the section entitled "GNU
+	Free Documentation License".
+\end{verbatim}
+}
+
+\newpage
+%\cleardoublepage
+
+\pdfbookmark[section]{\contentsname}{toc}
+\renewcommand{\contentsname}{Sommaire}
+\tableofcontents{}
+
+\section{Préparations}
+\input{1-preparation.tex}
+
+\section{Tutorials}
+\subsection{Task 1: Starting the RIOT}
+\input{2.1-task1.tex}
+
+\subsection{Task 2: Custom shell handlers}
+\input{2.2-task2.tex}
+
+\subsection{Task 3: Multithreading}
+\input{2.3-task3.tex}
+
+\subsection{Task 4: Timers}
+\input{2.4-task4.tex}
+
+\subsection{Task 5: Using network devices}
+\input{2.5-task5.tex}
+
+\subsection{Task 6: UDP Client / Server}
+\input{2.6-task6.tex}
+
+\subsection{Task 7: The GNRC network stack}
+C'est un peu la même chose que les précédents en utilisant les
+exemples d'applications du dépôt.
+
+\subsection{Task 8: CCN-Lite on RIOT}
+CCN: Content Centric Networking.\\
+\url{https://en.wikipedia.org/wiki/Content_centric_networking}
+
+\subsection{Task 9: RIOT and RPL}
+RPL: IPv6 Routing Protocol for Low-Power and Lossy Networks.\\
+Ça aussi on va se le garder pour plus tard.
+
+\end{document}

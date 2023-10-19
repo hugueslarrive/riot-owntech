@@ -1,0 +1,273 @@
+Cette architecture permet de faire fonctionner un projet sous forme de processus sous
+Linux (32bits).\\
+
+Sur mon système Debian 10 64bits (\enquote{crossgradée} depuis l'architecture 32bits)
+j'ai pu effectuer cette procédure en quelques minutes car tous les outils nécessaires
+étaient déjà installés.\\
+
+Toutefois le lien concernant les dépendances ne traite que de la Debian 7.5 assez
+ancienne et n'est donc plus fiable. Je vais donc recommencer la procédure de zéro
+dans une VM 64 bits afin de déterminer ce qui est réellement nécessaire.
+
+\subsubsection{Installation du système de base Debian 10 amd64}
+Création d'une VM virtualbox 64bits avec les options par défaut.\\
+
+Téléchargement d'une image iso de l'installeur :\\
+{\footnotesize
+\url{https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso}\\
+}\\
+%15h28
+Installation du système de base avec uniquement \enquote{serveur SSH} et
+\enquote{utilitaires usuels du système} lors de la sélection des logiciels.\\
+
+Passer l'interface réseau en mode bridge.\\
+
+Au premier démarrage installer net-tools, et identifier l'adresse réseau de la vm
+avec ifconfig.\\
+
+On peut maintenant s'y connecter par ssh.
+
+\subsubsection{Installation des dépendances}
+Dans un shell root :
+%{\footnotesize
+\begin{verbatim}
+dpkg --add-architecture i386
+apt-get update
+apt-get install libc6-dev-i386 libc6-dbg:i386 build-essential pkg-config \
+uml-utilities bridge-utils git unzip
+\end{verbatim}
+%}
+
+\subsubsection{Préparation}
+%{\scriptsize
+\begin{verbatim}
+git clone https://github.com/RIOT-OS/RIOT RIOT
+cd RIOT/examples
+cp -R default my_project
+cd my_project
+\end{verbatim}
+%}
+La page dit : \enquote{From this directory, you will compile everything you need,
+including the RIOT OS itself– one small make and everything is ready.}.\\
+
+Essayons :
+%{\scriptsize
+\begin{verbatim}
+hugues@debian10base:~/RIOT/examples/my_project$ make
+/home/hugues/RIOT/examples/my_project/../../Makefile.include:271: *** Neither
+unzip nor 7z is installed.. Arrêt.
+\end{verbatim}
+%}
+Je rajoute donc unzip dans la commande apt-get install de la section précédente.\\
+
+Cette fois ça fonctionne :
+%{\scriptsize
+\begin{verbatim}
+hugues@debian10base:~/RIOT/examples/my_project$ make
+Building application "default" for "native" with MCU "native".
+
+"make" -C /home/hugues/RIOT/boards/native
+"make" -C /home/hugues/RIOT/boards/native/drivers
+"make" -C /home/hugues/RIOT/core
+"make" -C /home/hugues/RIOT/cpu/native
+"make" -C /home/hugues/RIOT/cpu/native/netdev_tap
+"make" -C /home/hugues/RIOT/cpu/native/periph
+"make" -C /home/hugues/RIOT/cpu/native/stdio_native
+"make" -C /home/hugues/RIOT/cpu/native/vfs
+"make" -C /home/hugues/RIOT/drivers
+"make" -C /home/hugues/RIOT/drivers/netdev_eth
+"make" -C /home/hugues/RIOT/drivers/periph_common
+"make" -C /home/hugues/RIOT/drivers/saul
+"make" -C /home/hugues/RIOT/drivers/saul/init_devs
+"make" -C /home/hugues/RIOT/sys
+"make" -C /home/hugues/RIOT/sys/auto_init
+"make" -C /home/hugues/RIOT/sys/fmt
+"make" -C /home/hugues/RIOT/sys/iolist
+"make" -C /home/hugues/RIOT/sys/net/gnrc
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netapi
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif/ethernet
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif/hdr
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif/init_devs
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netreg
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pkt
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pktbuf
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pktbuf_static
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pktdump
+"make" -C /home/hugues/RIOT/sys/net/link_layer/l2util
+"make" -C /home/hugues/RIOT/sys/net/netif
+"make" -C /home/hugues/RIOT/sys/od
+"make" -C /home/hugues/RIOT/sys/phydat
+"make" -C /home/hugues/RIOT/sys/ps
+"make" -C /home/hugues/RIOT/sys/saul_reg
+"make" -C /home/hugues/RIOT/sys/shell
+"make" -C /home/hugues/RIOT/sys/shell/commands
+   text	   data	    bss	    dec	    hex	filename
+  91657	   1288	  72088	 165033	  284a9	/home/hugues/RIOT/examples/my_projec
+t/bin/native/default.elf
+\end{verbatim}
+%}
+
+\subsubsection{Test}
+Créer l'interface tap0, dans le shell root :
+%{\scriptsize
+\begin{verbatim}
+root@debian10base:~# tunctl -u hugues
+Set 'tap0' persistent and owned by uid 1000
+\end{verbatim}
+%}
+
+Lancer le projet :
+{\small
+\begin{verbatim}
+hugues@debian10base:~/RIOT/examples/my_project$ ./bin/native/default.elf tap0
+RIOT native interrupts/signals initialized.
+Native RTC initialized.
+LED_RED_OFF
+LED_GREEN_ON
+RIOT native board initialized.
+RIOT native hardware initialization complete.
+
+main(): This is RIOT! (Version: 2020.07-devel-244-gbb668)
+Welcome to RIOT!
+> help
+help
+Command              Description
+---------------------------------------
+reboot               Reboot the node
+version              Prints current RIOT_VERSION
+ps                   Prints information about running threads.
+rtc                  control RTC peripheral interface
+ifconfig             Configure network interfaces
+txtsnd               Sends a custom string as is over the link layer
+saul                 interact with sensors and actuators using SAUL
+> ps
+ps
+	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+	  - | isr_stack            | -        - |   - |   8192 (   -1) | 0x565e3520 | 0x565e3520
+	  1 | idle                 | pending  Q |  15 |   8192 (  436) | 0x565e1240 | 0x565e30a0 
+	  2 | main                 | running  Q |   7 |  12288 ( 3148) | 0x565de240 | 0x565e10a0 
+	  3 | pktdump              | bl rx    _ |   6 |  12288 (  992) | 0x565e9c80 | 0x565ecae0 
+	  4 | gnrc_netdev_tap      | bl rx    _ |   2 |   8192 ( 2444) | 0x565ecd00 | 0x565eeb60 
+	    | SUM                  |            |     |  49152 ( 7020)
+> rtc
+rtc
+usage: rtc <command> [arguments]
+commands:
+	poweron		power the interface on
+	poweroff	power the interface off
+	clearalarm	deactivate the current alarm
+	getalarm	print the currently alarm time
+	setalarm YYYY-MM-DD HH:MM:SS
+			set an alarm for the specified time
+	gettime		print the current time
+	settime YYYY-MM-DD HH:MM:SS
+			set the current time
+> rtc gettime
+rtc gettime
+2020-04-29 11:45:16
+> ifconfig
+ifconfig
+Iface  4  HWaddr: 3A:BE:D0:73:C8:37 
+          L2-PDU:1500 Source address length: 6
+          
+> txtsnd help
+txtsnd help
+usage: txtsnd <if> [<L2 addr>|bcast] <data>
+> txtsnd 4 bcast test    
+txtsnd 4 bcast test
+> 
+\end{verbatim}
+}
+
+On voit un processus \enquote{pktdump} qui revoit probablement ce qui passe dans le
+réseau sur la console. Si on active l'interface tap0 sur le système linux hôte
+(ifconfig tap0 up), la console riot est immédiatement pourrie de paquets ipv6 :
+{\small
+\begin{verbatim}
+> PKTDUMP: data received:
+~~ SNIP  0 - size:  76 byte, type: NETTYPE_UNDEF (0)
+00000000  60  00  00  00  00  24  00  01  00  00  00  00  00  00  00  00
+00000010  00  00  00  00  00  00  00  00  FF  02  00  00  00  00  00  00
+00000020  00  00  00  00  00  00  00  16  3A  00  05  02  00  00  01  00
+00000030  8F  00  A6  E0  00  00  00  01  04  00  00  00  FF  02  00  00
+00000040  00  00  00  00  00  00  00  01  FF  73  C8  36
+~~ SNIP  1 - size:  20 byte, type: NETTYPE_NETIF (-1)
+if_pid: 4  rssi: 0  lqi: 0
+flags: 0x0
+src_l2addr: 3A:BE:D0:73:C8:36
+dst_l2addr: 33:33:00:00:00:16
+~~ PKT    -  2 snips, total size:  96 byte
+PKTDUMP: data received:
+~~ SNIP  0 - size:  72 byte, type: NETTYPE_UNDEF (0)
+00000000  60  00  00  00  00  20  3A  FF  00  00  00  00  00  00  00  00
+00000010  00  00  00  00  00  00  00  00  FF  02  00  00  00  00  00  00
+00000020  00  00  00  01  FF  73  C8  36  87  00  7C  10  00  00  00  00
+\end{verbatim}
+}
+
+Pour éviter ça on peut désactiver l'ipv6 dans le noyau linux :
+\begin{verbatim}
+root@debian10base:~# echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6 
+\end{verbatim}
+
+OK, on va essayer d'en faire communiquer 2 vite fait.\\
+
+Pour cela on va créer une seconde interface et bridger les 2 :
+%{\scriptsize
+\begin{verbatim}
+root@debian10base:~# tunctl -u hugues
+Set 'tap1' persistent and owned by uid 1000
+root@debian10base:~# ifconfig tap1 up
+root@debian10base:~# brctl addbr br0
+root@debian10base:~# brctl addif br0 tap0 tap1
+root@debian10base:~# ifconfig br0 up
+\end{verbatim}
+%}
+Puis on lance un second RIOT et on retente la commande txtsnd :
+%{\scriptsize
+\begin{verbatim}
+hugues@debian10base:~/RIOT/examples/my_project$ ./bin/native/default.elf tap1
+RIOT native interrupts/signals initialized.
+Native RTC initialized.
+LED_RED_OFF
+LED_GREEN_ON
+RIOT native board initialized.
+RIOT native hardware initialization complete.
+
+main(): This is RIOT! (Version: 2020.07-devel-244-gbb668)
+Welcome to RIOT!
+> txtsnd 4 bcast test 
+txtsnd 4 bcast test 
+> 
+\end{verbatim}
+%}
+Dans la console du premier on voit apparaître :
+%{\scriptsize
+\begin{verbatim}
+PKTDUMP: data received:
+~~ SNIP  0 - size:   4 byte, type: NETTYPE_UNDEF (0)
+00000000  74  65  73  74
+~~ SNIP  1 - size:  20 byte, type: NETTYPE_NETIF (-1)
+if_pid: 4  rssi: 0  lqi: 0
+flags: 0x0
+src_l2addr: 1E:FF:60:4B:51:E2
+dst_l2addr: FF:FF:FF:FF:FF:FF
+~~ PKT    -  2 snips, total size:  24 byte
+^C
+native: exiting
+hugues@debian10base:~/RIOT/examples/my_project$ echo -n test | hd
+00000000  74 65 73 74                                       |test|
+00000004
+hugues@debian10base:~/RIOT/examples/my_project$ /sbin/ifconfig tap1
+tap1: flags=4099<UP,BROADCAST,MULTICAST>  mtu 1500
+        ether 1e:ff:60:4b:51:e1  txqueuelen 1000  (Ethernet)
+        RX packets 2  bytes 36 (36.0 B)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 0  bytes 0 (0.0 B)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+\end{verbatim}
+%}
+On observe que \enquote{00000000  74  65  73  74} correspond bien à la chaîne de
+caractères \enquote{test} envoyée et que \enquote{src\_l2addr: 1E:FF:60:4B:51:E2}
+est l'adresse MAC de la source.

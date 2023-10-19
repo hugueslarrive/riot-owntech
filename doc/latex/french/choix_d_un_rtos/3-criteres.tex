@@ -1,0 +1,170 @@
+\subsection{Tableau de synthèse de la présélection}
+{\footnotesize
+\begin{tabular}{lcccccc}
+\toprule
+
+		 & Licence		& Dépôt	 & Code style  & Doxygen	& Plateforme cible 	& Gestionnaire		\\
+\midrule
+\MR{2}{ChibiOS} & Apache 2.0 & \MR{2}{svn}	& K\&R	  &	\MR{2}{oui}	& \MR{2}{nucleo-f746zg}	& Giovanni		\\
+				& GPLv3	     &				& modifié &				&						& Di Sirio (IT)	\\
+FreeRTOS & MIT (Expat)  & github & MISRA	   &	non		& ARM\_CM7			& Amazon AWS (US)		\\
+NuttX	 & Apache 2.0	& github & NuttX	   &	non		& nucleo-f746zg		& Apache ASF (US)		\\
+\MR{2}{RIOT} & \MR{2}{LGPL 2.1}  & \MR{2}{github} & \MR{2}{Linux} &	\MR{2}{oui}	& \MR{2}{nucleo-f746zg} & Freie Universität \\
+			 &					 &				  &				  &				&						& Berlin (DE)		\\
+RTEMS	 & GPLv2/...	& git	 & RTEMS	   &	oui		& ARMv7-M			& OAR Corp. (US)	\\
+Mynewt	 & Apache2/...	& github & Mynewt	   &	oui		& nucleo-f746zg		& Apache ASF (US)	\\
+Zephyr	 & Apache 2.0	& github & Linux	   &	oui		& nucleo-f746zg		& Linux Foundation (US)	\\
+\bottomrule
+\end{tabular}
+}
+\subsubsection{Licences}
+On retrouve fréquemment la licence Apache version 2.0 qui semble être la plus
+adaptée pour ce genre de projet et un bon compromis entre la GPL trop restrictive
+et la licence MIT trop permissive.\\
+
+La solution employée par ChibiOS avec la HAL sous licence Apache 2.0 et le noyau sous
+licence GPLv3 est également intéressante car elle est permissive juste là où c'est
+nécessaire.
+
+\subsubsection{Code style}
+Du moment que c'est homogène et bien défini, ce n'est pas déterminant dans la mesure
+où nous n'avons pas de code préexistant à porter. 
+
+\subsubsection{Type de dépôt}
+SVN (Apache Subversion) est une solution de versionning centralisée qui peut poser
+problème en cas de panne du serveur et ne permet pas de travailler hors ligne.\\
+
+Le fait que NuttX et Mynewt utilisent git montre que l'ASF n'est pas sectaire...\\
+
+Ce n'est pas un critère déterminant.
+
+\subsubsection{Doxygen}
+Le fait qu'un projet utilise ou non Doxygen ne présage pas de la qualité de sa
+documentation. Ce n'est donc pas non-plus un critère déterminant.\\
+
+\subsubsection{Plateformes cible}
+C'est plus du domaine de la toolchain et de l'environnement de développement que de
+l'OS.\\
+
+ChibiOS par exemple fournit l'environnement de développement libre ChibiStudio basé
+sur Eclipse, GCC, OpenOCD et inclut donc des BSP (Board Support Package).\\
+
+FreeRTOS au contraire s'appuie sur des outils propriétaires comme STM32Cube et leur
+laisse donc développer et gérer le support pour leur matériel. Ces outils ne sont
+généralement disponible que pour windows ce qui représente un inconvénient majeur
+pour les développeurs de logiciels libres... Cela oblige également à changer d'outils
+en cas de changement d'architecture ce qui complique le portage.\\
+
+NuttX, RIOT, et Zephyr intègrent l'outil Kconfig de Linux que je trouve magnifique.\\
+
+RTEMS et Mynewt fournissent leurs propres outils qui semblent être des genres de
+\enquote{ package manager }.\\
+
+Beaucoup d'électroniciens travaillent sous windows et seront probablement plus
+attirés par ChibiOS ou FreeRTOS.\\
+
+Les informaticiens et développeurs de logiciels libres seront plus attirés par les
+autres.\\
+
+\subsubsection{Gestionnaire}
+Certains projets sont gérés par un individu, d'autres par des sociétés commerciales,
+d'autres par des organisations communautaires, certains sont américains et d'autres
+européens... quels sont les implications en termes d'éthique et de pérennité ?
+
+\subsection{Exigences pour un système d'exploitation temps réel}
+%Requirements for a real time operating system
+%The OS must be Hard real time and support:
+%- Task management
+%- Task communication
+%- Semaphores
+%- Networking
+%- File storage
+(Suggérées par Clément)\\
+L'OS doit supporter :
+\begin{itemize}
+	\item le temps réel strict ;
+	\item la gestion des tâches ;
+	\item la communication entre tâches ;
+	\item les sémaphores ;
+	\item la communication réseau ;
+	\item le stockage de fichiers.\\
+\end{itemize}
+
+{\footnotesize
+\begin{tabular}{lcccccc}
+\toprule
+
+		 & temps 	   & gestion	& communication & \MR{2}{sémaphores} & communication & stockage		\\
+		 & réel strict & des tâches & entre tâches  &					 & réseau		 & de fichiers	\\
+\midrule
+ChibiOS	 &		oui	   &	oui		&		oui	 	&		oui			 &		lib		 &		lib		\\
+FreeRTOS &		oui	   &	oui		&		oui	 	&		oui	 		 &		lib		 &		lib		\\
+NuttX	 &		oui	   &	oui		&		oui	 	&		oui			 &		oui		 &		oui		\\
+RIOT	 &		oui	   &	oui		&		oui	 	&		oui			 &		oui		 &		oui		\\
+RTEMS	 &		oui	   &	oui		&		oui	 	&		oui			 &		oui		 &		oui		\\
+Mynewt	 &		oui	   &	oui		&		oui	 	&		oui			 &		oui		 &		oui		\\
+Zephyr	 &		oui	   &	oui		&		oui	 	&		oui			 &		oui		 &		oui		\\
+\bottomrule
+\end{tabular}
+}
+\\\\
+
+Il apparaît que ChibiOS et FreeRTOS intègrent uniquement des services de bas niveau,
+un peu à la manière de mach\_kernel dans XNU de OSX/IOS. Il est probablement plus
+confortable de travailler avec un système dont les outils gèrent directement les
+services de haut niveau dont nous aurons besoin (à définir).\\
+
+%\subsection{En vrac}
+%\subsubsection{Réseau}
+%\begin{itemize}
+%	\item IPv4
+%	\item IPv6
+%	\item LoRaWAN
+%	\item MQTT
+%\end{itemize}
+
+%\subsubsection{Flash Circular Buffer}
+%Au hasard de mes recherches dans la dcumentation de Mynewt je suis tombé sur cette
+%page :\\
+
+%\url{https://mynewt.apache.org/latest/os/modules/fcb/fcb.html}.\\
+
+%Je pense que ce type de buffer peut être utilisé en cas de difficulté à initier un
+%enregistrement de données en temps réel suite à un événement.
+
+\subsection{Remarques concernant RTEMS}
+Remarque de Clément :
+\enquote{J'ai utilisé à l'époque (j'avais fait un portage hardware de l'OS), le code
+est illisible si tu veux rentrer dans le noyau. Au niveau utilisateur, je sais plus
+trop.}\\
+
+En ce qui me concerne, même l'organisation du dépôt me semble difficile à
+appréhender...\\
+
+Son origine militaire (commande de missile) me dérange un peu aussi.
+
+\subsection{Nouvelle sélection}
+Au vu de ces éléments les 4 meilleurs candidats sont :
+\begin{itemize}
+	\item NuttX
+	\item RIOT
+	\item Mynewt
+	\item Zephyr\\
+\end{itemize}
+
+\subsection{Tests}
+Les tests approfondi d'un RTOS prenant beaucoup de temps il est probable que le
+premier testé soit retenu s'il convient.\\
+
+Parmi les 4 options restantes, RIOT se démarque par son origine européenne et
+universitaire \cite{ref11} :
+\begin{verbatim}
+Il a été initialement développé par l'université libre de Berlin, l'Institut
+national de recherche en informatique et en automatique (INRIA) et l'université
+de sciences appliquées d'Hambourg (HAW Hamburg).
+\end{verbatim} 
+
+C'est pour cette raison qu'il a été décidé de manière collégiale qu'il serait le
+premier testé.\\
+
+Ces tests feront l'objet d'un autre document.

@@ -1,0 +1,65 @@
+\subsection{Prérequis}
+(depuis \url{https://github.com/RIOT-OS/RIOT/wiki/Creating-your-first-RIOT-project}) :
+\begin{itemize}
+	\item Install and set up git
+	\item Install the build-essential packet (make, gcc etc.). This varies based on
+			the operating system in use.
+	\item Install Native dependencies
+	\item Install OpenOCD
+	\item Install GCC Arm Embedded Toolchain
+	\item On OS X: install Tuntap for OS X
+	\item additional tweaks necessary to work with the targeted hardware (ATSAMR21)
+	\item Install netcat with IPv6 support (if necessary)
+			\begin{verbatim}sudo apt-get install netcat-openbsd}\end{verbatim}
+	\item \begin{verbatim}git clone --recursive https://github.com/RIOT-OS/Tutorials\end{verbatim}
+	\item Go to the Tutorials directory: cd Tutorials\\
+\end{itemize}
+
+Les 3 premiers points sont déjà OK sur ma machine.
+\subsection{OpenOCD}
+
+\url{https://github.com/RIOT-OS/RIOT/wiki/OpenOCD} :
+\begin{verbatim}
+OpenOCD (the open on-chip debugger) is an open source tool for debugging and
+flashing microcontrollers. In RIOT we try to use this tool for as many
+platforms as possible to reduce the overhead of having to keep track of many
+different (and sometimes proprietary) tools.
+\end{verbatim}
+
+C'est donc l'outil qui devrait nous permettre de téléverser notre firmware. La page
+explique son installation à partir des sources car les versions empaquetés dans les
+distributions ne supporte pas les cartes les plus récentes supportées par RIOT. Cette
+page datant de 2018 elle parle de la version 0.7.0 sur Mint 17 et de la version 0.9.0
+compilée depuis les sources.\\
+
+La version distribuée sur Debian 10 étant la 0.10.0 je vais m'en contenter dans un
+premier temps et j'y reviendrai si nécessaire.
+
+\subsection{GCC Arm Embedded Toolchain}
+
+Sur Debian c'est le package gcc-arm-none-eabi déjà présent sur ma machine en versions
+7-2018-q2, la version actuelle étant la 9-2019-q4. Comme pour OpenOCD je vais essayer
+de commencer avec ça.
+
+\subsection{En résumé}
+
+Dans un shell root :
+%{\scriptsize
+\begin{verbatim}
+dpkg --add-architecture i386
+apt-get update
+apt-get install libc6-dev-i386 libc6-dbg:i386 build-essential pkg-config \
+uml-utilities bridge-utils git unzip
+apt-get install openocd gcc-arm-none-eabi python3-serial
+\end{verbatim}
+%}
+Dans un shell utilisateur :
+%{\scriptsize
+\begin{verbatim}
+git clone --recursive https://github.com/RIOT-OS/Tutorials
+cd Tutorials
+\end{verbatim}
+%}
+
+Facile !
+

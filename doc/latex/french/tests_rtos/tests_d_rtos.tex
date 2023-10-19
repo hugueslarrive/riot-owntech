@@ -1,0 +1,73 @@
+\documentclass[a4paper,12pt, twoside]{article}
+
+\input{extras/definitions_and_includes.tex}
+\usepackage{amssymb}
+
+\usepackage[firstpage]{draftwatermark}
+
+\usepackage{alltt}
+
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cm}{\textcolor{green}{\ding{51}}}%
+\newcommand{\xm}{\textcolor{red}{\ding{55}}}%
+
+
+\title{Tests d'RTOS pour le firmware OwnTech}
+\author{Hugues Larrive <hugues.larrive@laas.fr>}
+\date{\today}	%defines the date of the document - leave empty for no date
+
+
+\begin{document}
+
+\maketitle{}
+
+\vspace*{\stretch{1}}
+
+\begin{abstract}
+	Ce document rapporte les tests effectués sur un ou plusieurs RTOS pour le
+	développement du firmware OwnTech, en commençant par RIOT OS. D'autres RTOS
+	pourront être testés soit s'il apparaît que RIOT OS ne convient pas, soit si l'on
+	veut avoir un ou des points de comparaison.
+\end{abstract}
+
+\vspace*{\stretch{1}}
+
+{\footnotesize
+\begin{verbatim}
+    Author: Hugues Larrive <hugues.larrive@laas.fr>
+
+	Copyright (C) 2020 LAAS-CNRS.
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.3
+	or any later version published by the Free Software Foundation;
+	with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+	A copy of the license is included in the section entitled "GNU
+	Free Documentation License".
+\end{verbatim}
+}
+
+\newpage
+%\cleardoublepage
+
+\pdfbookmark[section]{\contentsname}{toc}
+\renewcommand{\contentsname}{Sommaire}
+\tableofcontents{}
+
+%\newpage
+
+
+%\begin{figure}[!h]
+%	\begin{center}
+%		\includegraphics[scale=.35,angle=270]{images/DSC_0053.JPG}
+%	\end{center}
+%	\caption[]{\label{fig:result} Le résultat}
+%\end{figure}
+
+\section{RIOT}
+\input{1-riot.tex}
+
+\bibliographystyle{plain}
+\bibliography{tests_d_rtos}
+
+
+\end{document}

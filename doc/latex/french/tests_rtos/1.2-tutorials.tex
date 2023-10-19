@@ -1,0 +1,162 @@
+\subsubsection{Préparations (Configuration sans machine virtuelle)}
+\input{1.2.1-preparation.tex}
+
+\subsubsection{Task 1: Starting the RIOT}
+\input{1.2.2-task1.tex}
+
+\subsubsection{Task 2: Custom shell handlers}
+\input{1.2.3-task2.tex}
+
+\subsubsection{Task 3: Multithreading}
+\input{1.2.4-task3.tex}
+
+\subsubsection{Task 4: Timers}
+\input{1.2.5-task4.tex}
+
+\subsubsection{Task 5: Using network devices}
+\input{1.2.6-task5.tex}
+
+\subsubsection{Task 6: UDP Client / Server}
+\input{1.2.7-task6.tex}
+
+\subsubsection{Task 7: The GNRC network stack}
+C'est un peu la même chose que les précédents en utilisant les
+exemples d'applications du dépôt.
+
+\subsubsection{Task 8: CCN-Lite on RIOT}
+CCN: Content Centric Networking.\\
+\url{https://en.wikipedia.org/wiki/Content_centric_networking}
+
+\subsubsection{Task 9: RIOT and RPL}
+RPL: IPv6 Routing Protocol for Low-Power and Lossy Networks.\\
+Ça aussi on va se le garder pour plus tard.
+
+\subsubsection{Observations}
+\paragraph{Temps réel}~\\
+
+Sur la page d'accueil on peut lire : \texttt{Real-time capability due to
+ultra-low interrupt latency (~50 clock cycles) and priority-based
+scheduling}. Dans notre cas (216MHz) ça représente 231 ns.\\
+
+Mais dans les \enquote{Release Notes} il est décrit comme : \texttt{RIOT
+is a multi-threading operating system which enables \underline{soft}
+real-time capabilities}, ce qui est inquiétant vu qu'on a besoin de
+temps réel \enquote{hard} pour certaines fonctionnalités.\\
+
+Par ailleurs dans l'article d'introduction \cite{ref10} il est précisé :
+\begin{verbatim}
+In terms of speed, the delay incurred by using IPC decomposes into the
+time for (i) saving and restoring threadcontexts, (ii) the runtime of
+the scheduler and (iii) the runtime of the IPC submodule itself. While
+(i) is entirely determined by the CPU architecture, (ii) is constant as
+described in Section V-B, and a slim design of msgmakes (iii) small
+overhead compared to (i) and (ii). [...] In more detail: the time needed
+to interrupt and switch to a different thread will not exceed a (small)
+upper bound, since context saving, finding the nextthread to run, and
+context restoring are all deterministic operations.
+\end{verbatim}
+ce qui est rassurant.\\
+
+On aura besoin de temps réel \enquote{hard} pour gérer des boucles de
+mesures et correction des pwm. Une mesure avec l'ADC MCP3208 prend au
+moins 12 $\mu$s et la fréquence maximale prévue pour le PWM est de 200
+KHz soit une période de 5 $\mu$s ce qui est grand au regard de la
+latence d'interruption d'environ 200 ns.\\
+
+Contrairement aux systèmes basés sur des FPGA pour lesquels les
+datasheets donnent des timings extrêmement précis pour chaque
+entrée/sortie, dont les synthétiseurs logiques garantissent les durées
+de latence et avec lesquels ont peut tout paralléliser, il est très
+difficile de démontrer la capacité temps réel dur d'un système
+multi-tâches basé sur un microcontrôleur qui dépend pour beaucoup du
+matériel et de la manière dont on développe l'application. Ce 
+\enquote{soft} tient certainement plus d'une rigueur terminologique que
+d'une réelle limitation.\\
+
+\paragraph{Support de la nucleo-f746zg}~\\
+
+Le support de la nucleo-f746zg est incomplet, les cartes nucleo étant
+proches les unes des autres, il ne devrait pas être très difficile de
+le compléter. Comme vu précédemment le support réseau de la
+nucleo-f767zi semble fonctionner et le pwm est implémenté pour la
+nucleo-f207zg.\\
+
+Ci-dessous j'ai réalisé un tableau des différentes fonctionnalités
+supportées pour chaque carte nuleo : \\
+{\tiny
+\begin{tabular}{lcc      c     c     c     c     c     c        c               c     c      c          c     c     c     c                 c       c      c}
+\toprule
+%      & adc & arduino & can & dac & dma & eth & i2c & lpuart & motor  & pwm & qdec & riotboot & rtc & rtt & spi & spi\_gpio & timer & uart & usbdev \\
+%      &     &         &     &     &     &     &     &        & driver &     &      &          &     &     &     &    mode   &       &      &        \\
+ &\MR{2}{adc}&
+        \MR{2}{arduino}&
+                  \MR{2}{can}&
+                        \MR{2}{dac}&
+                              \MR{2}{dma}&
+                                    \MR{2}{eth}&
+                                          \MR{2}{i2c}&
+                                                \MR{2}{lpuart}& motor  &
+                                                                  \MR{2}{pwm}&
+                                                                        \MR{2}{qdec}&
+%      & adc & arduino & can & dac & dma & eth & i2c & lpuart & motor  & pwm & qdec & riotboot & rtc & rtt & spi & spi\_gpio & timer & uart & usbdev \\
+%      &     &         &     &     &     &     &     &        & driver &     &      &          &     &     &     &    mode   &       &      &        \\
+                                                                               \MR{2}{riotboot}&
+                                                                                          \MR{2}{rtc}&
+                                                                                                \MR{2}{rtt}&
+                                                                                                      \MR{2}{spi}& spi\_gpio &
+                                                                                                                        \MR{2}{timer}&
+                                                                                                                                \MR{2}{uart}&
+                                                                                                                                       \MR{2}{usbdev}\\
+       &     &         &     &     &     &     &     &        & driver &     &      &          &     &     &     &    mode   &       &      &        \\
+%      & adc & arduino & can & dac & dma & eth & i2c & lpuart & motor  & pwm & qdec & riotboot & rtc & rtt & spi & spi\_gpio & timer & uart & usbdev \\
+%      &     &         &     &     &     &     &     &        & driver &     &      &          &     &     &     &    mode   &       &      &        \\
+\midrule
+f030r8 & \cm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \xm &    \xm    &  \cm  & \cm  &  \xm   \\
+f031k6 & \cm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f042k6 & \cm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f070rb & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \xm &    \xm    &  \cm  & \cm  &  \xm   \\
+f072rb & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f091rc & \cm &   \cm   & \xm & \xm & \cm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f103rb & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \xm & \xm  &   \xm    & \xm & \cm & \xm &    \xm    &  \cm  & \cm  &  \xm   \\
+f207zg & \xm &   \cm   & \xm & \xm & \cm & \cm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \cm   \\
+f302r8 & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f303k8 & \xm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f303re & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f303ze & \xm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+%      & adc & arduino & can & dac & dma & eth & i2c & lpuart & motor  & pwm & qdec & riotboot & rtc & rtt & spi & spi\_gpio & timer & uart & usbdev \\
+%      &     &         &     &     &     &     &     &        & driver &     &      &          &     &     &     &    mode   &       &      &        \\
+f334r8 & \xm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f401re & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \cm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f410rb & \cm &   \xm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \xm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f411re & \cm &   \xm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f412zg & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \cm   \\
+f413zh & \cm &   \cm   & \cm & \xm & \cm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \cm   \\
+f429zi & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \cm   \\
+f446re & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \cm   & \cm & \cm  &   \cm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+f446ze & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \xm & \cm &    \xm    &  \cm  & \cm  &  \cm   \\
+f722ze & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \xm & \xm  &   \cm    & \cm & \cm & \xm &    \xm    &  \cm  & \cm  &  \cm   \\
+\midrule
+f746zg & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \xm & \xm  &   \cm    & \cm & \cm & \xm &    \xm    &  \cm  & \cm  &  \cm   \\
+\midrule
+f767zi & \xm &   \cm   & \xm & \xm & \cm & \cm & \cm &  \xm   &  \xm   & \xm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \cm   \\
+l031k6 & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+%      & adc & arduino & can & dac & dma & eth & i2c & lpuart & motor  & pwm & qdec & riotboot & rtc & rtt & spi & spi\_gpio & timer & uart & usbdev \\
+%      &     &         &     &     &     &     &     &        & driver &     &      &          &     &     &     &    mode   &       &      &        \\
+l053r8 & \xm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \xm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l073rz & \cm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \cm   &  \xm   & \cm & \xm  &   \cm    & \cm & \cm & \cm &    \cm    &  \cm  & \cm  &  \xm   \\
+l152re & \cm &   \cm   & \xm & \cm & \cm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \xm & \cm &    \cm    &  \cm  & \cm  &  \xm   \\
+l412kb & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \xm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l432kc & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l433rc & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \cm   &  \xm   & \cm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l452re & \xm &   \cm   & \xm & \xm & \xm & \xm & \xm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l476rg & \cm &   \cm   & \cm & \xm & \cm & \xm & \cm &  \xm   &  \xm   & \cm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l496zg & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \cm   &  \xm   & \cm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+l4r5zi & \xm &   \cm   & \xm & \xm & \xm & \xm & \cm &  \cm   &  \xm   & \xm & \xm  &   \cm    & \cm & \cm & \cm &    \xm    &  \cm  & \cm  &  \xm   \\
+\bottomrule
+\end{tabular}
+}
+
+Il est important de noter qu'il s'agit des fonctionnalités supportées
+pour les cartes, les périphériques des MCU étant définis dans les
+fichiers \texttt{cpu/stm32f?/include/vendor/stm32f*.h} qui sont fournis
+par ST sous licence BSD 3 clauses et sont donc complets.

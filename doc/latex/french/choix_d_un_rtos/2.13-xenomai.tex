@@ -1,0 +1,52 @@
+\begin{verbatim}
+Xenomai is a Free Software project in which engineers from a wide
+background collaborate to build a versatile real-time framework for
+the Linux© platform.
+\end{verbatim}
+
+À priori nous avions déjà écarté une solution basée sur linux lors d'une discussion
+informelle car linux n'est pas un noyau temps réel.\\
+
+Toutefois Xenomai semble y apporter des fonctionnalités de temps réel dur.\\
+
+Bien que linux réponde largement à tous les autre critères technique, je crains que
+ça ne soit au prix d'une complexité et d'un poids exagéré du firmware. C'est pourquoi
+je l'ai écarté dans un premier temps.\\
+
+Pour moi, il ne fait aucun doute que le STM32F746ZG puisse faire tourner Linux (j'ai 
+effectué ma première installation de linux en 1997 sur un 80486@66MHz bien moins
+rapide) mais ça nécessiterait d'emblée l'ajout de mémoire externe, le STM32F746ZG ne
+disposant que de 320KB de SRAM en interne.
+
+Par exemple on peut lire à propos de uClinux \cite{ref9} :
+{\small
+\begin{verbatim}
+The size of a practical bootable image, with Ethernet, TCP/IP and a reasonable set of
+user-space tools and applications confugured, would be in a 1.5 - 2 MBytes ballpark.
+With the "two-chips Linux design" concept in mind, a 1.5 MBytes image could possibly
+fit into internal Flash of today's Cortex-M microcontrollers. One example of a device
+that can hold an image of the size is the STM32F429 Cortex-M4 microcontroller.
+
+Size of external RAM required for run-time Linux operation. The answer we give to our
+customers when asked how much RAM is needed is the more the better, but no less than
+8 MBytes. Admittedly, it may be possible to run some very basic configurations with
+rootfs mounted from NFS or some external device even out of 2 MBytes but frankly this
+is more of a joke than a configuration one can build a practical uClinux design on.
+\end{verbatim}
+}
+
+Pour ceux qui se demande quelle-est la configuration minimale pour un noyau Linux :
+\url{http://dmitry.gr/?r=05.Projects&proj=07.%20Linux%20on%208bit} 
+
+\subsubsection{Acceptabilité}
+\begin{tabular}{lll}
+\toprule
+	Critère				&	Validé		&	Commentaire	\\
+\midrule
+	Licence				&	-			&		\\
+	Code source			&	-			&		\\
+	Plateformes cible	&	non			&	Linux	\\
+	Communauté			&	-			&		\\
+\bottomrule
+\end{tabular}
+

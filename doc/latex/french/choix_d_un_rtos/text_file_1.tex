@@ -1,0 +1,219 @@
+\section{Referencing with Latex}\label{section_ref}
+
+Latex packs a great punch when it come to the automatic structuring of a text. 
+It can handle referencing automatically, which will be given in the sub-section below.
+
+	\subsection{Referencing}
+	\begin{mytable}{Fréquences des canaux dans la bande 863-865MHz}{tbl_canaux_863}{c c}
+		\tables{canaux_863-865.tex}
+	\end{mytable}
+	As said in section \ref{section_ref} in page \pageref{section_writing}, this document can be changed at will to fit your needs.
+	But you will also find out that you reference figure \ref{fig_panneau} in page \pageref{fig_panneau} before it appears. 
+
+		\subsubsection{Test subsubsection}
+		blalbanbaodinadbs 
+	
+\section{Adding content with Latex}\label{section_content}
+
+One of the main purposes of this template is to help you inserting content easily in Latex. 
+Generally speaking, the content you will insert will either be tables with data, equations or figures. 
+Templates for each of these can be found at the bottom of this .tex file. 
+Since they are all commented, they will not appear in the final .pdf file.
+
+	\subsection{Inserting a figure in Latex}
+	
+	The template below is based on the \dbquote{myfigure} environment. 
+	In this environment, you can easily define the caption of the figure, its label and its size. 
+	
+	The caption is visible below the figure, its numbering is handled automatically by the latex compiler.
+	This figure has the number \ref{fig_panneau}, which can be referenced easily in the text by the ref command in the text.
+	
+	The \textbf{figs} command used in the example below was defined in the \textbf{definition\_and\_includes\_1.tex} file.
+	Note that to write the character \dbquote{\_} you will need to add a bar since the underscore is used for other applications in latex.
+	
+	Test \_ \& \* \% test	
+	
+	This command searches for any given file name within the file path \dbquote{/1-images/}.
+	In the case below, the file name is \dbquote{pdf\_figure\_1.pdf}.
+	
+	Since the original image of the figure below is an A4 sized pdf file, the figure must be shrunk to fit in the file.
+	The number in front of the \textbf{figs} command gives the shrinking of the file in a scale from 0 to 1, 
+	where 1 is the original size of the inserted file.  
+	
+	\begin{itemize}
+		\item test
+		\item test2
+		\item test3
+	\end{itemize}
+	
+	
+	\begin{myfigure}{Example of a figure caption}{fig_panneau}    
+%			\figs{0.5}{test_1.pdf}
+	\end{myfigure}		
+	
+	
+	\subsection{Inserting two figures side-by-side in Latex}
+	
+	This example is very similar to the insert one figure above.
+	The only change is the \dbquote{mbox} environment which aligns the figures for you, as you can see in figure \ref{fig_2_figures}.
+	You can also reference the figures \ref{fig_2_figures_1} and \ref{fig_2_figures_2} individually. 
+	
+	\begin{myfigure}{Example of a global figure caption}{fig_2_figures}    
+		\mbox{	
+%			\subfigure[This is a pdf figure		\label{fig_2_figures_1}]{\figs{0.15}{pdf_figure_1.pdf}} \quad
+%			\subfigure[This is a pdf figure		\label{fig_2_figures_1}]{\figs{0.15}{maison_test.png}} \quad
+%			\subfigure[This is another pdf figure	\label{fig_2_figures_2}]{\figs{0.15}{pdf_figure_1.pdf}}
+		} \\
+	\end{myfigure}		
+	
+	
+	\subsection{Inserting an equation}
+	
+	Latex has its own equation environment as shown below. 
+	Once inside this environment, you can use the latex syntax to write equations which have a very good rendering as shows equation \ref{eq_equation_label}.
+	More details on how to write complex equations are available on the Internet. 
+	
+	\begin{equation}
+		Variable_{1} = \dfrac{Variable_{2} \cdot Variable_{3}}{Variable_{four}}   
+		\label{eq_equation_label}
+	\end{equation}
+	
+	
+	\subsection{Inserting a table}
+	
+	You will notice that by far the most complex task in latex is to insert tables. 
+	I will not lie to you, this can be tough and frustrating at times, specially if you have a lot of data to write down.
+	However, this fact also has very interesting repercussions in your approach to using tables.
+	You will notice that if you can put your data on an image, it will be much better for you and comprehensible for your audience.
+	
+	To help you cope with the challenge of doing tables in latex, I propose the template below. 
+	Its main idea is that you write you table on a separate .tex file and then introduce it on the \dbquote{mytable} environment. 
+	The catch here is that you will declare the width of the columns OUTSIDE of your table, which can be tricky. 
+	Still I think this is a much easier way of making tables than what you can find out there. 
+	
+	Here is the example of a simple table.
+
+	%Important note : 
+	% M{5cm} defines a column of 5 cm with the text centered
+	% P{3cm} defines a column of 3 cm with the text on the left
+	% c defines a column with an automatic size according to the text with the text on the left
+
+	\begin{mytable}{Example of a simple table}{tbl_table_simple}{c c c c c}
+%		\tables{table_example_3.tex}
+	\end{mytable}
+	
+	Here is the example of a more elaborated table.
+	
+	\begin{mytable}{Example of a more elaborated table}{tbl_table_complicated}{M{2cm} M{3cm} M{3cm} M{3cm}}
+%		\tables{table_example_1.tex}
+	\end{mytable}
+	
+	Notice the absence of vertical lines in the tables.
+	This is style gives tables that are less aggressive visually, but the lack of vertical lines calls for even more caution when building tables. 
+	
+
+\section{Citations}
+
+Latex is also very good for citing authors. For example, the work done in \cite{Meyer} will appear automatically at the Reference section in the end of your document.
+This is quite useful, specially for scientific documents. 
+The standard used in this template is the IEEE, but this can also be changed if necessary.
+	
+\section{General recommendations and final thoughts}
+
+Using Latex is changing your text-writing philosophy.
+You will no longer worry about the format of your text but rather its content, since Latex handles the whole formatting process for you.
+It implies in stopping seeing you text as you do on Word and start thinking about how your text will look like. 
+This means that you will need a front-end software which will help you writing down your text. 
+
+My recommendation in Windows is to use Texnick Center (I'm not sure if that's spelled right). 
+You'll find the installation procedures on the Internet. 
+
+The mindset behind this template is that you only edit the files that contain the text that will be compiled. 
+The other includes should be kept as they are, along with the placement and name of the folders of this suit. 
+As long as you move everyone around together, stock your images in the 1-image folder, edit your tables in the 2-tables folder, this template should compile with no problems. 
+
+I hope you enjoy writing in Latex and that you find this example useful for you.
+
+All the best and good luck.
+
+
+
+
+	
+	
+	
+	
+
+\newpage
+
+
+%-----------------------------GENERAL TEMPLATES---------------------------------------------
+% Description - The general templates can be used to quickly add new figures, tables or equations
+%-----------------------------------------------------------------------------------------------
+% %----------------------------------ONE FIGURE TEMPLATE-------------------------------------------------------------
+% % Description - Introduces 1 figure in the text. Replace name_of_figure by the name of the file you wish to include.
+% %            	Remember that all figure files should be in the /1-images/ folder
+% % 		fig_figure_label is the label of the figure
+% % 		the number in \figs{0.3} is the size of the figure in comparison with the original
+% %---------------------------------------------------------------------------------------------------------------------
+% 
+%	\begin{myfigure}{Figure caption}{fig_figure_label}    
+%			\figs{0.3}{name_of_figure.pdf}
+%	\end{myfigure}		
+% 
+
+
+% %----------------------------------TWO FIGURES TEMPLATE-------------------------------------------------------------
+% Description - Introduces 2 figures in the text. Replace name_of_figure by the name of the file you wish to include.
+% %            	Remember that all figure files should be in the /1-images/ folder
+% % 		fig_figure_label is the label of the general figure
+% % 		fig_figure_label_1 is the label of figure (a)
+% % 		fig_figure_label_2 is the label of figure (b)
+% % 		the number in \figs{0.25} is the size of the figure in comparison with the original
+% %---------------------------------------------------------------------------------------------------------------------
+%
+%	\begin{myfigure}{Global figure caption}{fig_figure_label}    
+%		\mbox{	\subfigure[Figure (a) caption	\label{fig_figure_label_1}]{\figs{0.25}{name_of_figure_1.pdf}} \quad
+%			\subfigure[Figure (b) caption 	\label{fig_figure_label_2}]{\figs{0.25}{name_of_figure_2.pdf}}} \\
+%	\end{myfigure}		
+%
+
+
+
+
+% %----------------------------------EQUATION TEMPLATE-------------------------------------------------------------
+% % Description - Introduces 1 equation in the text. Write down the equation in the place of the Variables below. 
+% % 		  eq_equation_label is the label of the figure
+% %---------------------------------------------------------------------------------------------------------------------
+% % 
+%	\begin{equation}
+%		Variable_{1} = Variable_{2} \cdot Variable_{3}   
+%		\label{eq_equation_label}
+%	\end{equation}
+
+
+
+% %----------------------------------TABLE TEMPLATE-------------------------------------------------------------
+% % Description - Introduces 1 table in the text. Replace name_of_table by the name of the file you wish to include.
+% %            	Remember that all table files should be in the /2-tables/ folder
+% % 		tbl_table_label is the label of the figure
+% % 		M{5cm} defines a column of 5 cm with the text centered
+% % 		P{5cm} defines a column of 5 cm with the text on the left
+% % 		c defines a column with an automatic size according to the text with the text on the left
+% %---------------------------------------------------------------------------------------------------------------------
+%
+%	\begin{mytable}{Table caption}{tbl_table_label}{c M{5cm} P{5cm}}
+%		\input{../2-tables/name_of_table.tex}
+%	\end{mytable}
+
+
+
+
+
+
+
+
+
+
+
+

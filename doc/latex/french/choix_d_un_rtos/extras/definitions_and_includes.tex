@@ -1,0 +1,123 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage{lmodern}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[francais]{babel}
+\usepackage{verbatim}
+\usepackage{tikz}
+\usepackage{eurosym} % pour € \euro{}
+\usepackage{csquotes} % pour les guillemets
+
+%\usepackage{newtxmath}
+
+\usepackage[
+  % Some remarks:
+  % * drivers like 'pdftex' that can be detected automatically
+  %   are not necessary
+  % * breaklinks is rather an internal option.
+  %   If a driver does not support it, then forcing the option
+  %   let the text break across lines, but also the link
+  %   areas are "broken". If the driver supports the option,
+  %   then the option is enabled anyway.
+  % * Information entries should be set outside,
+  %   because LaTeX expands the package options,
+  %   hyperref does not like them, if they are
+  %   prematurely expanded.
+  % * Hyperref has a new option for hiding links: hidelinks
+  hidelinks,
+  pagebackref,
+  bookmarksopen,
+  bookmarksnumbered,
+  a4paper,
+]{hyperref}
+\hypersetup{
+  pdfauthor={Hugues Larrive},
+  % ...
+}
+% Adding package bookmark improves bookmarks handling.
+% More features and faster updated bookmarks.
+\usepackage{bookmark}
+
+\usepackage{layout}
+\oddsidemargin=-1cm
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+
+\usepackage{wrapfig}
+\usepackage{graphicx}
+
+
+\usepackage{listings}
+\lstset{
+     literate=%
+		{à}{{\`a}}1
+		{é}{{\'e}}1
+		{ê}{{\^e}}1
+		{è}{{\`e}}1
+		{É}{{\'E}}1
+		{ç}{{\c{c}}}1
+}
+\usepackage{color}
+
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ 
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}; should come as last argument
+  basicstyle=\footnotesize,        % the size of the fonts that are used for the code
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace
+  breaklines=true,                 % sets automatic line breaking
+  captionpos=b,                    % sets the caption-position to bottom
+  commentstyle=\color{mygreen},    % comment style
+  deletekeywords={...},            % if you want to delete keywords from the given language
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8
+  frame=single,	                   % adds a frame around the code
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)
+  keywordstyle=\color{blue},       % keyword style
+  language=Octave,                 % the language of the code
+  morekeywords={*,...},            % if you want to add more keywords to the set
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)
+  numbersep=5pt,                   % how far the line-numbers are from the code
+  numberstyle=\tiny\color{mygray}, % the style that is used for the line-numbers
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'
+  showstringspaces=false,          % underline spaces within strings only
+  showtabs=false,                  % show tabs within strings adding particular underscores
+  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered
+  stringstyle=\color{mymauve},     % string literal style
+  tabsize=2%,	                   % sets default tabsize to 2 spaces
+  %title=\lstname                   % show the filename of files included with \lstinputlisting; also try caption instead of title
+}
+
+\lstdefinestyle{customc}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color{green!40!black},
+  commentstyle=\itshape\color{purple!40!black},
+  identifierstyle=\color{blue},
+  stringstyle=\color{orange},
+}
+
+\lstset{escapechar=£,style=customc}
+
+\usepackage{algorithm2e}
+\usepackage{pdfpages}
+\usepackage{gensymb} % for \degree
+%\usepackage{setspace}
+
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{multirow}
+\newcommand{\MR}[2]{\multirow{#1}{*}{#2}}			%simplifies multirow command - must use the multirow package
+\newcommand{\MC}[2]{\multicolumn{#1}{c}{#2}}			%simplifies the multicollumn command - must use the multicollumn package
+
+
+
+

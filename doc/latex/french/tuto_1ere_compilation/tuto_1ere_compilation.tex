@@ -1,0 +1,166 @@
+\documentclass[a4paper,12pt, twoside]{article}
+
+\input{extras/definitions_and_includes.tex}
+\usepackage{amssymb}
+
+%\usepackage[firstpage]{draftwatermark}
+
+\usepackage{alltt}
+
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cm}{\textcolor{green}{\ding{51}}}%
+\newcommand{\xm}{\textcolor{red}{\ding{55}}}%
+
+
+\title{Préparation pour la compilation de RIOT OS sous Ubuntu 20.04 ou Debian 10
+(dépendances)}
+\author{Hugues Larrive <hlarrive@laas.fr>}
+\date{\today}	%defines the date of the document - leave empty for no date
+
+
+\begin{document}
+
+\maketitle{}
+
+\vspace*{\stretch{1}}
+
+\begin{abstract}
+    Les pages \url{https://github.com/RIOT-OS/RIOT/wiki/Creating-your-first-RIOT-project}
+    et \url{https://github.com/RIOT-OS/Tutorials} pointent toutes les
+    deux vers
+    \url{https://github.com/RIOT-OS/RIOT/wiki/Family:-native#dependencies}
+    qui traite de l'installation des dépendances sur des versions
+    obsolètes comme Debian 7.5 et Ubuntu 14.10 !\\
+    
+    Voici donc un court tuto pour la compilation de RIOT OS sur les 
+    versions actuelles de ces systèmes.
+\end{abstract}
+
+\vspace*{\stretch{1}}
+
+{\footnotesize
+\begin{verbatim}
+    Author: Hugues Larrive <hugues.larrive@laas.fr>
+
+	Copyright (C) 2020 LAAS-CNRS.
+	Permission is granted to copy, distribute and/or modify this document
+	under the terms of the GNU Free Documentation License, Version 1.3
+	or any later version published by the Free Software Foundation;
+	with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+	A copy of the license is included in the section entitled "GNU
+	Free Documentation License".
+\end{verbatim}
+}
+
+\newpage
+%\cleardoublepage
+
+\pdfbookmark[section]{\contentsname}{toc}
+\renewcommand{\contentsname}{Sommaire}
+\tableofcontents{}
+
+
+\section{Architectures}
+RIOT OS supporte de nombreuse architectures matériel comme stm32, avr,
+mips, xtensa, msp430, etc.\\
+
+En plus de ces architectures, il offre la possibilité de compiler un
+projet sous la forme d'un binaire elf 32bits exécutable sous linux pour
+effectuer des tests (architecture \enquote{native}).\\
+
+Les PC actuels étant d'architecture 64 bits, il est nécessaire d'activer
+le support multi-architecture sur les systèmes Debian / Ubuntu :
+\begin{verbatim}
+sudo dpkg --add-architecture i386
+\end{verbatim}
+
+Cette commande ne retourne rien mais on peut vérifier les architectures
+supportées. La commande \texttt{dpkg ---print-architecture} retourne
+l'architecture principale du système et la commande
+\texttt{dpkg ---print-foreign-architectures} retourne les autres
+architectures activées par \texttt{---add-architecture}.\\
+
+Un fois l'architecture activée il est nécessaire de mettre à jour la
+base de données des packages :
+\begin{verbatim}
+sudo apt-get update
+\end{verbatim}
+
+Après ça on peut installer un package d'architecture i386 en ajoutant
+\enquote{:i386} après son nom dans une commande apt-get.
+
+\section{Installation des dépendances}
+\subsection{Essentiel et architecture native}
+\begin{verbatim}
+sudo apt-get install libc6-dev-i386 libc6-dbg:i386 build-essential pkg-config \
+uml-utilities bridge-utils git unzip
+\end{verbatim}
+\subsection{Pour l'architecture stm32}
+\begin{verbatim}
+sudo apt-get install openocd gcc-arm-none-eabi
+\end{verbatim}
+
+\section{Test}
+Télécharger RIOT OS et créer un projet comme indiqué dans 
+\url{https://github.com/RIOT-OS/RIOT/wiki/Creating-your-first-RIOT-project} :
+\begin{verbatim}
+git clone https://github.com/RIOT-OS/RIOT RIOT
+cd RIOT/examples
+cp -R default my_project
+cd my_project
+\end{verbatim}
+
+Le compiler :
+{\small
+\begin{verbatim}
+hugues@debian10base:~/RIOT/examples/my_project$ make
+Building application "default" for "native" with MCU "native".
+
+"make" -C /home/hugues/RIOT/boards/native
+"make" -C /home/hugues/RIOT/boards/native/drivers
+"make" -C /home/hugues/RIOT/core
+"make" -C /home/hugues/RIOT/cpu/native
+"make" -C /home/hugues/RIOT/cpu/native/netdev_tap
+"make" -C /home/hugues/RIOT/cpu/native/periph
+"make" -C /home/hugues/RIOT/cpu/native/stdio_native
+"make" -C /home/hugues/RIOT/cpu/native/vfs
+"make" -C /home/hugues/RIOT/drivers
+"make" -C /home/hugues/RIOT/drivers/netdev_eth
+"make" -C /home/hugues/RIOT/drivers/periph_common
+"make" -C /home/hugues/RIOT/drivers/saul
+"make" -C /home/hugues/RIOT/drivers/saul/init_devs
+"make" -C /home/hugues/RIOT/sys
+"make" -C /home/hugues/RIOT/sys/auto_init
+"make" -C /home/hugues/RIOT/sys/fmt
+"make" -C /home/hugues/RIOT/sys/iolist
+"make" -C /home/hugues/RIOT/sys/net/gnrc
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netapi
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif/ethernet
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif/hdr
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netif/init_devs
+"make" -C /home/hugues/RIOT/sys/net/gnrc/netreg
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pkt
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pktbuf
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pktbuf_static
+"make" -C /home/hugues/RIOT/sys/net/gnrc/pktdump
+"make" -C /home/hugues/RIOT/sys/net/link_layer/l2util
+"make" -C /home/hugues/RIOT/sys/net/netif
+"make" -C /home/hugues/RIOT/sys/od
+"make" -C /home/hugues/RIOT/sys/phydat
+"make" -C /home/hugues/RIOT/sys/ps
+"make" -C /home/hugues/RIOT/sys/saul_reg
+"make" -C /home/hugues/RIOT/sys/shell
+"make" -C /home/hugues/RIOT/sys/shell/commands
+   text	   data	    bss	    dec	    hex	filename
+  91657	   1288	  72088	 165033	  284a9	/home/hugues/RIOT/examples/my_projec
+t/bin/native/default.elf
+\end{verbatim}
+}
+
+
+%\bibliographystyle{plain}
+%\bibliography{tests_d_rtos}
+
+
+\end{document}

@@ -1,0 +1,81 @@
+Création du réseau virtuel :
+\begin{verbatim}
+root@W520:~# tunctl -u 1000
+Set 'tap0' persistent and owned by uid 1000
+root@W520:~# tunctl -u 1000
+Set 'tap1' persistent and owned by uid 1000
+root@W520:~# brctl addbr br0
+root@W520:~# brctl addif br0 tap0 tap1
+root@W520:~# ifconfig br0 up
+root@W520:~# ifconfig tap0 up
+root@W520:~# ifconfig tap1 up
+\end{verbatim}
+
+La communication entre les 2 riot natif fonctionner comme prévue.\\
+
+La commande netcat sur ma machine n'implémentait pas l'IPv6 :
+{\footnotesize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-06$ echo "hello" | nc -6u fe80::ac51:57ff:fe42:8286%br0 8888
+nc: invalid option -- '6'
+nc -h for help
+\end{verbatim}
+}
+J'y ai donc installé le package \texttt{netcat-openbsd}.\\
+
+J'ai utilisé \texttt{br0} au lieu de \texttt{tapbr0} dans la commandes
+linux.\\
+
+Dans ma configuration br0 a la même adresse IPv6 que tap1, c'est donc
+cette adresse que j'ai du utiliser pour envoyer un message de RIOT 
+$\rightarrow$ l'hôte linux.\\
+
+Avec la commande \texttt{nc -6lu 8888} je ne pouvais recevoir q'un seul
+message, après quoi elle restait active mais ne recevait plus rien. On
+peut recevoir plusieurs messages de suite en ajoutant l'option
+\enquote{k}.\\
+
+\paragraph{Test sur la nucleo\\\\}
+D'abord je récupère l'adresse IPv6 de l'interface wifi de mon portable 
+et je lance un serveur UDP avec netcat :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-06$ /sbin/ifconfig wlp3s0
+wlp3s0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.21.32  netmask 255.255.255.0  broadcast 192.168.21.255
+        inet6 2a01:e34:ed4f:42d0:a054:e4fc:dea1:f876  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::9588:ffe2:5b3e:7c2b  prefixlen 64  scopeid 0x20<link>
+        ether 08:11:96:24:86:9c  txqueuelen 1000  (Ethernet)
+        RX packets 62172  bytes 19221714 (18.3 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 56365  bytes 8802188 (8.3 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+hugues@W520:~/Tutorials/task-06$ nc -6luk 8888
+\end{verbatim}
+}
+Il faut prendre la seconde (\texttt{<link>}) : 
+\texttt{fe80::9588:ffe2:5b3e:7c2b}.\\
+
+Puis je flash la nucleo, j'essaie un ping vers mon portable et un petit
+\enquote{\texttt{hello}} :
+{\scriptsize
+\begin{verbatim}
+> ping6 fe80::9588:ffe2:5b3e:7c2b
+2020-05-15 00:11:50,930 #  ping6 fe80::9588:ffe2:5b3e:7c2b
+2020-05-15 00:11:50,967 # 12 bytes from fe80::9588:ffe2:5b3e:7c2b%5: icmp_seq=0 ttl=64 time=30.498 ms
+2020-05-15 00:11:51,938 # 12 bytes from fe80::9588:ffe2:5b3e:7c2b%5: icmp_seq=1 ttl=64 time=1.171 ms
+2020-05-15 00:11:52,938 # 12 bytes from fe80::9588:ffe2:5b3e:7c2b%5: icmp_seq=2 ttl=64 time=1.153 ms
+2020-05-15 00:11:52,938 # 
+2020-05-15 00:11:52,942 # --- fe80::9588:ffe2:5b3e:7c2b PING statistics ---
+2020-05-15 00:11:52,947 # 3 packets transmitted, 3 packets received, 0% packet loss
+2020-05-15 00:11:52,951 # round-trip min/avg/max = 1.153/10.940/30.498 ms
+> udp fe80::9588:ffe2:5b3e:7c2b 8888 hello
+2020-05-15 00:16:03,049 #  udp fe80::9588:ffe2:5b3e:7c2b 8888 hello
+2020-05-15 00:16:03,054 # Success: send 5 byte to fe80::9588:ffe2:5b3e:7c2b
+\end{verbatim}
+}
+Sur le portable j'obtiens bien :
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-06$ nc -6luk 8888
+hello
+\end{verbatim}

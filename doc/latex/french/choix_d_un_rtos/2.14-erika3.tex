@@ -1,0 +1,51 @@
+\subsubsection{Licences}
+ERIKA v3 is now distributed under the following three licensing schemes :
+\begin{itemize}
+	\item GPLv2, with a linking exception allowing the inclusion and linking of
+			specific silicon vendor source code (e.g., the register include file, device
+			drivers, and so on);
+	\item GPLv2 + linking exception license, which will allow a customer to link
+			proprietary source code;
+	\item Commercial license.
+\end{itemize}
+
+\subsubsection{Code source}
+Le code est hébergé sur github.com :
+\url{https://github.com/evidence/erika3}.\\
+
+Les commentaires comportent des tags Doxygen.\\
+
+On retrouve un peu les mêmes bizarreries que dans le code de Trampoline :
+\begin{verbatim}
+FUNC(void, OS_CODE) osEE_cortex_m_system_init(void)
+{
+\end{verbatim}
+
+
+\subsubsection{Plateformes cible}
+Il y a un dossier cortex-m dans erika3/pkg/arch/.
+
+
+\subsubsection{Communauté}
+Le projet semble jeune (environ 2 ans), du moins pour la version 3.\\
+
+Il semble peu actif : dernier commit en septembre 2019.\\
+
+Il y a un wiki et un forum.\\
+
+Le projet semble open-source mais fermé à la contribution.\\
+
+Rien de très excitant en somme.
+
+\subsubsection{Acceptabilité}
+\begin{tabular}{lll}
+\toprule
+	Critère				&	Validé		&	Commentaire	\\
+\midrule
+	Licence				&	oui			&		\\
+	Code source			&	oui			&		\\
+	Plateformes cible	&	oui			&	cortex-m	\\
+	Communauté			&	non			&	dernier commit en septembre 2019	\\
+\bottomrule
+\end{tabular}
+

@@ -1,0 +1,65 @@
+Il s'agit de lancer un thread.\\
+
+On ajoute le code donné dans la fonction main() et lorsque le handler
+est exécuté il affiche \enquote{I'm in "thread" now} dans le terminal.\\
+
+J'ai trouvé ça un peu nul donc j'ai ajouté un \texttt{ps();} dans le
+handler pour pouvoir mieux l'observer (il faut aussi ajouter
+\texttt{\#include "ps.h"}) :
+{\scriptsize
+\begin{verbatim}
+ 2020-05-07 01:25:33,090 # reboot
+2020-05-07 01:25:33,093 # main(): This is RIOT! (Version: 2020.04)
+2020-05-07 01:25:33,095 # This is Task-03
+2020-05-07 01:25:33,096 # I'm in "thread" now
+2020-05-07 01:25:33,104 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-07 01:25:33,113 # 	  - | isr_stack            | -        - |   - |    512 (  104) | 0x20000000 | 0x200001c8
+2020-05-07 01:25:33,121 # 	  1 | idle                 | pending  Q |  15 |    256 (  124) | 0x200003c0 | 0x20000444 
+2020-05-07 01:25:33,130 # 	  2 | main                 | pending  Q |   7 |   1536 (  360) | 0x200004c0 | 0x20000974 
+2020-05-07 01:25:33,136 # 	  3 | thread               | running  Q |   6 |   1536 (  448) | 0x20000ac4 | 0x2000104c 
+2020-05-07 01:25:33,143 # 	    | SUM                  |            |     |   3840 ( 1036)
+> ps
+2020-05-07 01:25:41,334 #  ps
+2020-05-07 01:25:41,340 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-07 01:25:41,348 # 	  - | isr_stack            | -        - |   - |    512 (  116) | 0x20000000 | 0x200001c8
+2020-05-07 01:25:41,357 # 	  1 | idle                 | pending  Q |  15 |    256 (  132) | 0x200003c0 | 0x2000043c 
+2020-05-07 01:25:41,365 # 	  2 | main                 | running  Q |   7 |   1536 (  676) | 0x200004c0 | 0x20000914 
+2020-05-07 01:25:41,372 # 	    | SUM                  |            |     |   2304 (  924)
+\end{verbatim}
+}
+J'observe une forte augmentation de la mémoire utilisée dans la pile du
+thread main (360$\rightarrow$676) suite à la commande \texttt{ps}.\\
+
+Au début du programme donné il y a :
+\texttt{char stack[THREAD\_STACKSIZE\_MAIN];}.
+
+Cette constante est définie dans le fichier :
+\texttt{RIOT/blob/master/core/include/thread.h}.
+
+On y voit que :\\
+\texttt{THREAD\_STACKSIZE\_MAIN} =
+\texttt{THREAD\_STACKSIZE\_DEFAULT} +
+\texttt{THREAD\_EXTRA\_STACKSIZE\_PRINTF}\\
+
+Sur le stm32 \texttt{THREAD\_STACKSIZE\_MAIN} = 1024 et 
+\texttt{THREAD\_EXTRA\_STACKSIZE\_PRINTF} = 512.\\
+
+On y voit qu'il y a aussi :\\
+\begin{itemize}
+\item \texttt{THREAD\_STACKSIZE\_LARGE = THREAD\_STACKSIZE\_MEDIUM x 2}
+\item \texttt{THREAD\_STACKSIZE\_MEDIUM = THREAD\_STACKSIZE\_DEFAULT}
+\item \texttt{THREAD\_STACKSIZE\_SMALL = THREAD\_STACKSIZE\_MEDIUM / 2}
+\item \texttt{THREAD\_STACKSIZE\_TINY = THREAD\_STACKSIZE\_MEDIUM / 4}
+\end{itemize}~\\
+
+Je l'ai donc définie à \texttt{THREAD\_STACKSIZE\_SMALL} (512) ce qui
+est suffisant.\\
+
+Sur le nano c'est insuffisant : vu que j'ai réduit
+\texttt{THREAD\_STACKSIZE\_MAIN} de moitié on ser retrouve avec
+l'équivalent de \texttt{THREAD\_EXTRA\_STACKSIZE\_PRINTF} et il nous 
+faudrait un peu plus.\\
+
+Le bon compromis est donc \texttt{THREAD\_STACKSIZE\_TINY} +
+\texttt{THREAD\_EXTRA\_STACKSIZE\_PRINTF} ce qui nous donnera 768 sur le
+stm32 et 392 sur l'avr.

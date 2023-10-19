@@ -1,0 +1,160 @@
+Il s'agit d'écrire 2 gestionnaires de commande shell :
+\begin{itemize}
+	\item une commande echo ;
+	\item une commande toggle pour une led.\\
+\end{itemize}
+
+\subsubsection{stm32}
+Lors de la compilation j'ai recontré le problème suivant :
+{\scriptsize
+\begin{verbatim}
+hugues@W520:~/Tutorials/task-02$ make all flash term
+Building application "Task02" for "bluepill" with MCU "stm32f1".
+
+In file included from /home/hugues/Tutorials/RIOT/boards/bluepill/include/board.h:32:0,
+                 from /home/hugues/Tutorials/RIOT/drivers/include/led.h:35,
+                 from /home/hugues/Tutorials/task-02/main.c:5:
+/home/hugues/Tutorials/task-02/main.c: In function 'toggle':
+/home/hugues/Tutorials/RIOT/boards/common/blxxxpill/include/board_common.h:36:29: error: 'GPIOC' undeclared (first u
+se in this function)
+ #define LED0_PORT           GPIOC                                   /**< GPIO-Port the LED is connected to */
+                             ^
+/home/hugues/Tutorials/RIOT/boards/common/blxxxpill/include/board_common.h:49:30: note: in expansion of macro 'LED0_
+PORT'
+ #define LED0_TOGGLE         (LED0_PORT->ODR  ^= LED0_MASK)          /**< Toggle LED0 */
+                              ^~~~~~~~~
+/home/hugues/Tutorials/task-02/main.c:33:2: note: in expansion of macro 'LED0_TOGGLE'
+  LED0_TOGGLE;
+  ^~~~~~~~~~~
+/home/hugues/Tutorials/RIOT/boards/common/blxxxpill/include/board_common.h:36:29: note: each undeclared identifier i
+s reported only once for each function it appears in
+ #define LED0_PORT           GPIOC                                   /**< GPIO-Port the LED is connected to */
+                             ^
+/home/hugues/Tutorials/RIOT/boards/common/blxxxpill/include/board_common.h:49:30: note: in expansion of macro 'LED0_
+PORT'
+ #define LED0_TOGGLE         (LED0_PORT->ODR  ^= LED0_MASK)          /**< Toggle LED0 */
+                              ^~~~~~~~~
+/home/hugues/Tutorials/task-02/main.c:33:2: note: in expansion of macro 'LED0_TOGGLE'
+  LED0_TOGGLE;
+  ^~~~~~~~~~~
+make[1]: *** [/home/hugues/Tutorials/RIOT/Makefile.base:110: /home/hugues/Tutorials/task-02/bin/bluepill/application
+_Task01/main.o] Error 1
+make: *** [/home/hugues/Tutorials/task-02/../RIOT/Makefile.include:538: /home/hugues/Tutorials/task-02/bin/bluepill/
+application_Task01.a] Error 2
+\end{verbatim}
+}
+Le problème ne se produit qu'avec BOARD=bluepill, \texttt{make all}
+fonctionne bien avec \enquote{native}, \enquote{nucleo-f746zg}, ou même
+\enquote{nucleo-f103rb}.\\
+
+Le problème est peut-être lié à l'ordre de traitement des dépendances
+ : \url{https://github.com/RIOT-OS/RIOT/issues/9913}.\\
+ 
+J'ai pu le contourner par une inclusion conditionnelle :
+\begin{lstlisting}
+#ifdef BOARD_BLUEPILL
+#include "vendor/stm32f103xe.h"
+#endif
+\end{lstlisting}
+
+\subsubsection{main.c}
+Voilà ce que donne le fichier main.c :
+\begin{lstlisting}
+#include <stdio.h>
+#include <string.h>
+
+#include "shell.h"
+#include "led.h"
+
+#ifdef BOARD_BLUEPILL
+#include "vendor/stm32f103xe.h"
+#endif
+
+int echo(int argc, char **argv)
+{
+    /* Print a line of text */
+    (void)argc;
+    (void)argv;
+    
+    if (argc > 1) {
+    	for (int i = 1; i < argc-1; i++) {
+	        printf("%s ", argv[i]);
+	    }
+		printf("%s\n", argv[argc-1]);
+    }
+    else {
+		printf("\n");
+	}
+	
+    return 0;
+}
+
+int toggle(int argc, char **argv)
+{
+	/** Toggles the primary LED on the board **/
+    (void)argc;
+    (void)argv;
+
+	LED0_TOGGLE;
+	
+	return 0;
+}
+
+static const shell_command_t commands[] = {
+    { "echo", "Print a line of text", echo },
+    { "toggle", "Toggles the primary LED on the board", toggle },
+    { NULL, NULL, NULL }
+};
+
+int main(void)
+{
+    puts("This is Task-02");
+
+    char line_buf[SHELL_DEFAULT_BUFSIZE];
+    shell_run(commands, line_buf, SHELL_DEFAULT_BUFSIZE);
+
+    return 0;
+}
+\end{lstlisting}
+
+\subsubsection{arduino-nano}
+Sur l'arduino ça ne passe plus :
+{\scriptsize
+\begin{verbatim}
+/usr/lib/gcc/avr/5.4.0/../../../avr/bin/ld : l'adresse 0x800871 de /home/hugues/Tutorials/task-02/bin/arduino-nano
+/Task02.elf de la section «.bss» n'est pas dans la région «data»
+\end{verbatim}
+}
+Pour que ça passe on peut réduire la valeur de
+\texttt{THREAD\_STACKSIZE\_DEFAULT} dans le fichier
+\texttt{RIOT/cpu/atmega\_common/include/cpu\_conf.h} de 512 à 256 :
+{\scriptsize
+\begin{verbatim}
+2020-05-06 15:24:43,923 # 	pid | name                 | state    Q | pri | stack  ( used) | base addr  | current     
+2020-05-06 15:24:44,023 # 	  1 | idle                 | pending  Q |  15 |    128 (   84) |      0x4b2 |      0x4df 
+2020-05-06 15:24:44,123 # 	  2 | main                 | running  Q |   7 |    384 (  336) |      0x532 |      0x5a9 
+2020-05-06 15:24:44,166 # 	    | SUM                  |            |     |    512 (  420)
+\end{verbatim}
+}
+La commande \texttt{toggle} ne fonctionne pas.\\
+
+Il y avait une erreur dans le fichier :\\
+\texttt{RIOT/boards/common/arduino-atmega/include/board\_common.h}.\\
+
+Le patch pour que ça fonctionne sur le nano :
+\begin{lstlisting}
+--- ../RIOT/boards/common/arduino-atmega/include/board_common.h	2020-04-27 21:01:08.376660474 +0200
++++ RIOT/boards/common/arduino-atmega/include/board_common.h	2020-05-06 16:14:12.768798005 +0200
+@@ -76,9 +76,9 @@
+ #define LED2_ON             (PORTD &= ~LED2_MASK)
+ #define LED2_TOGGLE         (PORTD ^=  LED2_MASK)
+ #else
+-#define LED0_ON             (PORTD |=  LED0_MASK)
+-#define LED0_OFF            (PORTD &= ~LED0_MASK)
+-#define LED0_TOGGLE         (PORTD ^=  LED0_MASK)
++#define LED0_ON             (PORTB |=  LED0_MASK)
++#define LED0_OFF            (PORTB &= ~LED0_MASK)
++#define LED0_TOGGLE         (PORTB ^=  LED0_MASK)
+ #endif
+ /** @} */
+\end{lstlisting}

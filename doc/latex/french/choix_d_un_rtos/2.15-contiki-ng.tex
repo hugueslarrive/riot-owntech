@@ -1,0 +1,44 @@
+\subsubsection{Licence}
+Licence BSD 3 Clauses \cite{ref8}.\\
+
+Cette licence est compatible avec la GNU GPL.
+
+\subsubsection{Code source}
+Le code est hébergé sur github : \url{https://github.com/contiki-ng/contiki-ng}\\
+
+Les commentaires comportent des tags doxygen.\\
+
+Il y a un \enquote{Code style} documenté.\\
+
+Le code semble peu commenté mais très lisible.
+
+\subsubsection{Plateformes cible}
+Bien qu'il soit avant tout destiné à des SoC de capteurs miniature comme TI CC2538,
+il semble supporter l'architecture Cortex-M7 :
+\url{https://github.com/contiki-ng/contiki-ng/blob/develop/arch/cpu/arm/cortex-m/CMSIS/core_cm7.h}.
+
+\subsubsection{Communauté}
+Le dépot github indique 15345 commits et 193 contributeurs.\\
+
+On y trouve un fichier \enquote{CONTRIBUTING.md} donc il accepte les contributions.\\
+
+Il y a un wiki et un site internet.
+
+\subsubsection{Acceptabilité}
+\begin{tabular}{lll}
+\toprule
+	Critère				&	Validé		&	Commentaire	\\
+\midrule
+	Licence				&	oui			&		\\
+	Code source			&	oui			&		\\
+	Plateformes cible	&	oui			&		\\
+	Communauté			&	oui			&		\\
+\bottomrule
+\end{tabular}
+
+Bien qu'il réponde à tous les critères définis à ce stade, je vais l'écarter d'emblée
+car ce n'est pas un RTOS : 
+\url{https://fr.wikipedia.org/wiki/Contiki#Ex%C3%A9cution_d'applications_en_temps_r%C3%A9el},
+\enquote{Contiki n'est pas un système d'exploitation permettant l'exécution
+d'applications en temps réel}.
+
